@@ -1709,6 +1709,11 @@ async function spawnEnemy() {
 
   currentEnemy = enemy;
 
+  // Heal entire team fully at the start of each new fight
+  for(const p of gameState.team) {
+    if(p && p.statsLoaded) p.currentHp = getMaxHp(p);
+  }
+
   // Gentle encounter flash - not eye-burning
   const flash = document.getElementById('encounter-flash');
   flash.style.transition = 'opacity 0.05s';
