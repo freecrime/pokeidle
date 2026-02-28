@@ -1144,26 +1144,35 @@ body::before {
 
       <!-- BOX TAB -->
       <div class="tab-content" id="tab-box">
-        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--text2);margin-bottom:8px;">POKÉMON BOX</div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--text2);margin-bottom:6px;">POKÉMON BOX</div>
+        <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--text2);align-self:center">Sort:</span>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('level')">Lv ↕</button>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('name')">A-Z</button>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('shiny')">✨</button>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('type')">Type</button>
+        </div>
         <div class="poke-box" id="poke-box-grid"></div>
       </div>
 
       <!-- GACHA TAB -->
       <div class="tab-content" id="tab-gacha">
+        <!-- 1. Normal Pokemon Gacha (cheapest) -->
         <div class="gacha-section">
           <h3>🎲 POKÉMON GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
-            ✨ Shiny: 1/512 · Rates vary by rarity
+            Common to Legendary · ✨ Shiny: 1/512
           </div>
           <div class="gacha-btns">
             <button class="btn" onclick="doPokemonGacha(1)">× 1<br><span style="font-size:13px;color:var(--gold)">💎 5</span></button>
             <button class="btn gold" onclick="doPokemonGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💎 40</span></button>
           </div>
         </div>
+        <!-- 2. Epic Pokemon Gacha (rarer pool) -->
         <div class="gacha-section" style="border-color:#9c27b0;background:linear-gradient(135deg,rgba(80,0,120,0.3),rgba(30,0,60,0.2))">
           <h3 style="color:#ce93d8">⚡ EPIC GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
-            ✨ Shiny: 1/64 · Boosted Legendary rate<br>
+            ✨ Shiny: 1/64 · No commons · Boosted Legendary<br>
             <span style="color:#ce93d8">Higher chance for rare Pokémon</span>
           </div>
           <div class="gacha-btns">
@@ -1171,27 +1180,44 @@ body::before {
             <button class="btn" style="border-color:#9c27b0;color:#ce93d8;background:rgba(80,0,120,0.2)" onclick="doEpicGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💎 450</span></button>
           </div>
         </div>
+        <!-- 3. Shiny Gacha (guaranteed shiny, most expensive pokemon gacha) -->
+        <div class="gacha-section" style="border-color:#ff69b4;background:linear-gradient(135deg,rgba(120,0,80,0.3),rgba(60,0,40,0.2))">
+          <h3 style="color:#ff69b4">✨ SHINY GACHA</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
+            <span class="shiny-text">Guaranteed Shiny Pokémon!</span><br>
+            <span style="color:#ff69b4">From Epic pool · 1/25 legendary chance</span>
+          </div>
+          <div class="gacha-btns">
+            <button class="btn" style="border-color:#ff69b4;color:#ff69b4;width:100%" onclick="doShinyGacha()">× 1<br><span style="font-size:13px;color:var(--gold)">💎 450</span></button>
+          </div>
+        </div>
+        <!-- 4. Standard Item Gacha -->
         <div class="gacha-section">
           <h3>🎁 ITEM GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
-            Get held items &amp; equipment
+            Standard held items &amp; equipment
           </div>
           <div class="gacha-btns">
             <button class="btn" onclick="doItemGacha(1)">× 1<br><span style="font-size:13px;color:var(--gold)">💰 200</span></button>
-            <button class="btn gold" onclick="doItemGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💰 1800</span></button>
+            <button class="btn gold" onclick="doItemGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💰 1,800</span></button>
           </div>
         </div>
+        <!-- 5. Epic Item Gacha (most expensive, includes Rare Candy) -->
+        <div class="gacha-section" style="border-color:#e040fb;background:linear-gradient(135deg,rgba(60,0,100,0.4),rgba(20,0,50,0.2))">
+          <h3 style="color:#e040fb">💠 EPIC ITEM GACHA</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
+            Rare items including <span style="color:#ff69b4">Rare Candy 🍬</span>!<br>
+            <span style="color:#e040fb">Stronger gear — endgame worthy</span>
+          </div>
+          <div class="gacha-btns">
+            <button class="btn" style="border-color:#e040fb;color:#e040fb" onclick="doEpicItemGacha(1)">× 1<br><span style="font-size:13px;color:var(--gold)">💰 5,000</span></button>
+            <button class="btn" style="border-color:#e040fb;color:#e040fb;background:rgba(80,0,120,0.2)" onclick="doEpicItemGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💰 40,000</span></button>
+          </div>
+        </div>
+        <!-- 6. Free Daily (always last) -->
         <div class="gacha-section" style="border-color:#00c853;background:linear-gradient(135deg,rgba(0,50,20,0.4),rgba(0,20,10,0.2))">
           <h3 style="color:#69f0ae">🌟 FREE DAILY</h3>
           <button class="btn" style="border-color:#00c853;color:#69f0ae;width:100%;margin-top:4px" id="daily-btn" onclick="doDaily()">CLAIM FREE PULL</button>
-        </div>
-        <div class="gacha-section" style="border-color:#ff6d00;background:linear-gradient(135deg,rgba(80,20,0,0.5),rgba(30,5,0,0.3))">
-          <h3 style="color:#ff9e40">🐉 EVENT BOSS</h3>
-          <div style="text-align:center;margin-bottom:8px">
-            <div style="font-size:13px;color:#ff9e40;font-family:'Press Start 2P';font-size:8px">RAYQUAZA Lv.270</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:4px">A legendary sky dragon.<br>Defeat it to capture it!<br>Shiny chance: <span style="color:#ffd700">1/25</span></div>
-          </div>
-          <button class="btn" style="border-color:#ff6d00;color:#ff9e40;width:100%" onclick="startEventBoss()">⚔️ CHALLENGE<br><span style="font-size:12px;color:var(--text2)">💎 150 Gems</span></button>
         </div>
       </div>
 
@@ -1417,6 +1443,17 @@ const ITEMS = [
   {id:'exp_share', name:'Exp. Share', emoji:'📡', desc:'Holder gains 30% of EXP earned by the active fighter even while benched', effect:'exp_share'},
 ];
 
+const EPIC_ITEMS = [
+  {id:'rare_candy', name:'Rare Candy', emoji:'🍬', desc:'Instantly gives one Pokémon a full level up! Use from bag.', effect:'rare_candy'},
+  {id:'mega_stone', name:'Mega Stone', emoji:'💎', desc:'+40% all stats. Powerful but balanced!', effect:'mega_stone', value:1.4},
+  {id:'soul_dew', name:'Soul Dew', emoji:'💠', desc:'+35% Sp.Atk and Sp.Def', effect:'soul_dew', value:1.35},
+  {id:'draco_plate', name:'Draco Plate', emoji:'🐉', desc:'+45% all stats for Dragon-type. +20% for others.', effect:'draco_plate', value:1.45},
+  {id:'rusted_sword', name:'Rusted Sword', emoji:'⚔️', desc:'+60% Attack damage — legendary blade!', effect:'rusted_sword', value:1.6},
+  {id:'prism_scale', name:'Prism Scale', emoji:'🌈', desc:'+25% all stats and +15% max HP', effect:'prism_scale', value:1.25},
+  {id:'eviolite', name:'Eviolite', emoji:'🔮', desc:'+35% Defense and Sp.Def. Absorb 20% of all damage.', effect:'eviolite', value:1.35},
+  {id:'power_herb', name:'Power Herb', emoji:'🌿', desc:'+20% Speed &amp; Attack', effect:'power_herb', value:1.2},
+];
+
 // Base stats cache from PokeAPI
 const statsCache = {};
 
@@ -1442,6 +1479,8 @@ let gameState = {
     floor: 0,
     winsOnFloor: 0,
     winsNeeded: 30,
+    mode: null,
+    farmRegionIdx: 0,
   }
 };
 
@@ -1476,13 +1515,25 @@ function getEffectiveStat(stat, pokemon, statName) {
     val = Math.floor(val * (1 + (pokemon.level - 100) * 0.008));
   }
   // Apply item effects
-  const item = ITEMS.find(i => i.id === gameState.equippedItems[pokemon.uid]);
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i => i.id === gameState.equippedItems[pokemon.uid]);
   if(item) {
     if(item.effect === 'atk_boost' && statName === 'attack') val = Math.floor(val * item.value);
     if(item.effect === 'spatk_boost' && statName === 'special-attack') val = Math.floor(val * item.value);
     if(item.effect === 'spdef_boost' && statName === 'special-defense') val = Math.floor(val * item.value);
     if(item.effect === 'spd_boost' && statName === 'speed') val = Math.floor(val * item.value);
     if(item.effect === 'type_boost' && pokemon.types.includes(item.type)) val = Math.floor(val * 1.25);
+    // Epic item effects
+    if(item.effect === 'mega_stone') val = Math.floor(val * item.value);
+    if(item.effect === 'soul_dew' && (statName === 'special-attack' || statName === 'special-defense')) val = Math.floor(val * item.value);
+    if(item.effect === 'draco_plate') {
+      const mult = pokemon.types.includes('dragon') ? item.value : 1.4;
+      val = Math.floor(val * mult);
+    }
+    if(item.effect === 'rusted_sword' && statName === 'attack') val = Math.floor(val * item.value);
+    if(item.effect === 'prism_scale') val = Math.floor(val * item.value);
+    if(item.effect === 'eviolite' && (statName === 'defense' || statName === 'special-defense')) val = Math.floor(val * item.value);
+    if(item.effect === 'power_herb' && (statName === 'speed' || statName === 'attack')) val = Math.floor(val * item.value);
   }
   return val;
 }
@@ -1492,6 +1543,10 @@ function getMaxHp(pokemon) {
   const base = pokemon.stats.find(s=>s.stat.name==='hp').base_stat;
   let hp = Math.floor((base * 2 * pokemon.level / 100) + pokemon.level + 10);
   if(pokemon.level > 100) hp = Math.floor(hp * (1 + (pokemon.level-100)*0.01));
+  // Epic item: prism_scale gives +20% HP
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i=>i.id===gameState.equippedItems[pokemon.uid]);
+  if(item?.effect === 'prism_scale') hp = Math.floor(hp * 1.2);
   return hp;
 }
 
@@ -1561,8 +1616,10 @@ function initStarterScreen() {
     game.style.flexDirection = 'column';
     if(gameState.road.active) document.getElementById('arena').classList.add('road-mode');
     renderAll();
-    if(gameState.road.active) spawnRoadEnemy();
-    else spawnEnemy();
+    if(gameState.road.active) {
+      if(gameState.road.mode === 'farm') spawnFarmEnemy();
+      else spawnRoadEnemy();
+    } else spawnEnemy();
     startBattle();
     toast('✅ Save loaded!');
     return;
@@ -1687,7 +1744,7 @@ function battleTick() {
   if(!battleTick.lastRegen) battleTick.lastRegen = now;
   if(now - battleTick.lastRegen >= 1000) {
     battleTick.lastRegen = now;
-    const regenItem = ITEMS.find(i=>i.id===gameState.equippedItems[player.uid]);
+    const regenItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[player.uid]);
     if(regenItem?.effect === 'regen') {
       const heal = Math.max(1, Math.floor(getMaxHp(player) / 16));
       const prev = player.currentHp;
@@ -1726,7 +1783,8 @@ function doPlayerAttack(player) {
   let dmg = Math.max(1, getAttack(player) + Math.floor((Math.random()-0.5)*10));
 
   // Life orb
-  const item = ITEMS.find(i=>i.id===gameState.equippedItems[player.uid]);
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i=>i.id===gameState.equippedItems[player.uid]);
   if(item?.effect === 'life_orb') {
     dmg = Math.floor(dmg * 1.3);
     const selfDmg = Math.floor(getMaxHp(player) * 0.1);
@@ -1742,7 +1800,7 @@ function doPlayerAttack(player) {
   currentEnemy.currentHp = Math.max(0, currentEnemy.currentHp - dmg);
 
   // Rocky helmet
-  const enemyItem = ITEMS.find(i=>i.id===gameState.equippedItems[currentEnemy.uid]);
+  const enemyItem = allItems.find(i=>i.id===gameState.equippedItems[currentEnemy.uid]);
   if(enemyItem?.effect === 'rocky_helmet') {
     const recoil = Math.floor(getMaxHp(player) / 6);
     player.currentHp = Math.max(0, player.currentHp - recoil);
@@ -1762,11 +1820,17 @@ function doEnemyAttack(player) {
   if(!currentEnemy || player.currentHp <= 0) return;
   let dmg = Math.max(1, getAttack(currentEnemy) + Math.floor((Math.random()-0.5)*10));
 
-  const item = ITEMS.find(i=>i.id===gameState.equippedItems[player.uid]);
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i=>i.id===gameState.equippedItems[player.uid]);
 
   // Assault Vest: reduces incoming damage by 25%
   if(item?.effect === 'spdef_boost') {
     dmg = Math.floor(dmg * 0.75);
+  }
+
+  // Eviolite: absorb 20% of incoming damage
+  if(item?.effect === 'eviolite') {
+    dmg = Math.floor(dmg * 0.80);
   }
 
   // Focus sash: survive from full hp
@@ -1820,6 +1884,11 @@ function enemyDefeated(player) {
       addLog(`💎 +${gemGainRoad} Gem from Diamond Road! (${w}/${floor.winsNeeded})`, 'log-evolve');
       updateResourceUI();
     }
+    // Gold bonus for road battles
+    const roadGoldBonus = floor.goldBonus || 0;
+    if(roadGoldBonus > 0) {
+      gameState.gold += roadGoldBonus;
+    }
 
     if(gameState.road.winsOnFloor >= floor.winsNeeded) {
       // Floor cleared!
@@ -1845,7 +1914,7 @@ function enemyDefeated(player) {
 
   // EXP gain
   let expGain = Math.floor(currentEnemy.level * 15 + Math.random() * 20 + 10);
-  const item = ITEMS.find(i=>i.id===gameState.equippedItems[player.uid]);
+  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[player.uid]);
   if(item?.effect === 'lucky_egg') expGain = Math.floor(expGain * 1.5);
 
   giveExp(player, expGain);
@@ -1861,23 +1930,53 @@ function enemyDefeated(player) {
   renderAll();
 
   const delay = gameState.road.active ? 800 : 1200;
-  setTimeout(gameState.road.active ? spawnRoadEnemy : spawnEnemy, delay);
+  const nextSpawn = gameState.road.active
+    ? (gameState.road.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+    : spawnEnemy;
+  setTimeout(nextSpawn, delay);
 }
 
 function playerPokemonFainted(player) {
   addLog(`${player.name} fainted!`, 'log-dmg');
-  // Auto-heal fainted pokemon to 30% so they can come back later
+
+  // During boss fight: no auto-revive, mark at 0 HP permanently until fight ends
+  if(bossBattleActive && currentEnemy?.isBoss) {
+    player.currentHp = 0;
+    addLog(`${player.name} is down for the count!`, 'log-dmg');
+
+    // Find next alive teammate
+    let nextIdx = -1;
+    for(let i = 1; i <= gameState.team.length; i++) {
+      const idx = (gameState.currentFighterIdx + i) % gameState.team.length;
+      const p = gameState.team[idx];
+      if(p && p !== player && p.currentHp > 0) { nextIdx = idx; break; }
+    }
+
+    if(nextIdx >= 0) {
+      gameState.currentFighterIdx = nextIdx;
+      const next = gameState.team[nextIdx];
+      addLog(`Go, ${next.name}! Fight Rayquaza! 💪`, 'log-heal');
+      updatePlayerUI(next);
+      playerAttackCooldown = 0;
+      enemyAttackCooldown = Date.now() + 800;
+      renderBottomBar();
+    } else {
+      // All fainted — boss fight failed
+      handleBossFailed();
+    }
+    return;
+  }
+
+  // Normal battle: Auto-heal fainted pokemon to 30% so they can come back later
   const reviveHp = Math.max(1, Math.floor(getMaxHp(player) * 0.30));
   player.currentHp = reviveHp;
   addLog(`${player.name} is resting and will recover...`, 'log-heal');
 
-  // Find next alive pokemon in team (skip fainted by checking if they were JUST set to reviveHp)
-  // We need to find someone that was already alive (currentHp > reviveHp or different pokemon)
+  // Find next alive pokemon in team
   let nextIdx = -1;
   for(let i = 1; i <= gameState.team.length; i++) {
     const idx = (gameState.currentFighterIdx + i) % gameState.team.length;
     const p = gameState.team[idx];
-    // Consider alive if they have more than the just-set revive amount or if they weren't the one that just fainted
     if(p && p !== player && p.currentHp > 0) {
       nextIdx = idx;
       break;
@@ -1890,7 +1989,7 @@ function playerPokemonFainted(player) {
     addLog(`Go, ${next.name}! 💪`, 'log-heal');
     updatePlayerUI(next);
     playerAttackCooldown = 0;
-    enemyAttackCooldown = Date.now() + 800; // give player a moment
+    enemyAttackCooldown = Date.now() + 800;
     renderBottomBar();
   } else {
     // All fainted - full revive at 25% and restart
@@ -1928,7 +2027,7 @@ function giveExp(pokemon, amount) {
   if(expShareAmt > 0) {
     gameState.box.forEach(p => {
       if(p === pokemon) return;
-      const item = ITEMS.find(i=>i.id===gameState.equippedItems[p.uid]);
+      const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[p.uid]);
       if(item?.effect === 'exp_share') {
         p.exp += expShareAmt;
         while(p.exp >= p.expToNext && p.level < 250) {
@@ -2063,8 +2162,8 @@ function renderTeamSlots() {
         playerAttackCooldown = 0;
         renderAll();
       };
-      // Right click to remove from team
-      div.oncontextmenu = (e) => { e.preventDefault(); removeFromTeam(i); };
+      // Right click to show info card
+      div.oncontextmenu = (e) => { e.preventDefault(); showPokemonInfoCard(p); };
     } else {
       div.classList.add('empty-slot');
       div.innerHTML = '+';
@@ -2080,10 +2179,11 @@ function renderPokemonBox() {
     grid.innerHTML = '<div style="color:var(--text2);font-size:14px">No Pokémon yet. Use Gacha!</div>';
     return;
   }
-  gameState.box.forEach((p, idx) => {
+  const sorted = getBoxSorted();
+  sorted.forEach((p, idx) => {
     const div = document.createElement('div');
     div.className = 'poke-card' + (p.isShiny ? ' shiny-card' : '');
-    const equippedItem = ITEMS.find(i=>i.id===gameState.equippedItems[p.uid]);
+    const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[p.uid]);
     div.innerHTML = `
       ${p.isShiny ? '<div style="position:absolute;top:3px;right:4px;font-size:14px">★</div>' : ''}
       <img src="${getSpriteUrl(p.id, p.isShiny)}" onerror="this.src='${getBattleSprite(p.id,p.isShiny)}'">
@@ -2095,6 +2195,7 @@ function renderPokemonBox() {
       </div>
     `;
     div.onclick = () => showPokemonModal(p);
+    div.oncontextmenu = (e) => { e.preventDefault(); showPokemonInfoCard(p); };
     grid.appendChild(div);
   });
 }
@@ -2131,18 +2232,21 @@ function renderBottomBar() {
 function renderItems() {
   const grid = document.getElementById('item-grid');
   grid.innerHTML = '';
-  ITEMS.forEach(item => {
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  allItems.forEach(item => {
     const count = gameState.inventory[item.id] || 0;
     if(count === 0) return;
     const div = document.createElement('div');
     div.className = 'item-cell';
     div.title = `${item.name}: ${item.desc}`;
+    const isEpic = EPIC_ITEMS.some(e=>e.id===item.id);
+    if(isEpic) div.style.border = '1px solid #e040fb';
     div.innerHTML = `${item.emoji}<span class="item-count">×${count}</span>`;
     div.onclick = () => showItemModal(item);
     div.oncontextmenu = (e) => { e.preventDefault(); trashItem(item.id); };
     grid.appendChild(div);
   });
-  if(Object.keys(gameState.inventory).length === 0 || !Object.values(gameState.inventory).some(v=>v>0)) {
+  if(!allItems.some(i=>(gameState.inventory[i.id]||0)>0)) {
     grid.innerHTML = '<div style="color:var(--text2);font-size:13px;grid-column:1/-1">No items yet! Use Item Gacha.</div>';
   }
 }
@@ -2429,7 +2533,35 @@ function handleBossDefeated(player) {
   // Resume battle
   playerAttackCooldown = 0;
   enemyAttackCooldown = 0;
-  setTimeout(gameState.road.active ? spawnRoadEnemy : spawnEnemy, 2000);
+  const nextSpawn = gameState.road.active
+    ? (gameState.road.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+    : spawnEnemy;
+  setTimeout(nextSpawn, 2000);
+}
+
+function handleBossFailed() {
+  bossBattleActive = false;
+  currentEnemy = null;
+  bossEnemy = null;
+
+  // Restore arena
+  document.getElementById('arena').style.background = '';
+  if(gameState.road.active) document.getElementById('arena').classList.add('road-mode');
+
+  addLog('💀 RAYQUAZA DESTROYED YOUR TEAM! You fled!', 'log-dmg');
+  toast('💀 Rayquaza wiped your team! Better luck next time!', 5000);
+
+  // Revive all at 25%
+  gameState.team.forEach(p => { p.currentHp = Math.max(1, Math.floor(getMaxHp(p)*0.25)); });
+  gameState.currentFighterIdx = 0;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+
+  renderAll();
+  const nextSpawn = gameState.road.active
+    ? (gameState.road.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+    : spawnEnemy;
+  setTimeout(nextSpawn, 2500);
 }
 
 async function doPokemonGacha(count) {
@@ -2478,6 +2610,95 @@ async function doItemGacha(count) {
   renderAll();
 
   if(count === 1) showItemGachaResult(gotten[0]);
+}
+
+// ============================================================
+// EPIC ITEMS
+// ============================================================
+
+async function doEpicItemGacha(count) {
+  const cost = count === 1 ? 5000 : 40000;
+  if(gameState.gold < cost) { toast(`Need ${formatNum(cost)} 💰 Gold!`); return; }
+  gameState.gold -= cost;
+  updateResourceUI();
+
+  const gotten = [];
+  for(let i=0; i<count; i++) {
+    const item = EPIC_ITEMS[Math.floor(Math.random()*EPIC_ITEMS.length)];
+    gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
+    gotten.push(item);
+  }
+
+  const unique = [...new Set(gotten.map(i=>i.name))];
+  toast(`💠 Epic Items: ${unique.join(', ')}!`, 4000);
+  renderAll();
+
+  if(count === 1) showItemGachaResult(gotten[0]);
+  else {
+    document.getElementById('modal-title').textContent = '💠 Epic Items Received!';
+    document.getElementById('modal-content').innerHTML = `
+      <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px">
+        ${gotten.map(item=>`
+          <div style="text-align:center;background:rgba(200,0,255,0.1);border:1px solid #e040fb;border-radius:8px;padding:10px;width:90px">
+            <div style="font-size:36px">${item.emoji}</div>
+            <div style="font-family:'Press Start 2P';font-size:6px;color:#e040fb;margin-top:4px">${item.name}</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn" onclick="closeModal()" style="width:100%;margin-top:12px">Nice haul!</button>
+    `;
+    openModal();
+  }
+}
+
+async function doShinyGacha() {
+  const cost = 450;
+  if(gameState.gems < cost) { toast(`Need ${cost} 💎 Gems for Shiny Gacha!`); return; }
+  gameState.gems -= cost;
+  updateResourceUI();
+
+  // Pick from epic pool but guarantee shiny
+  const chosen = pickFromPool(EPIC_GACHA_POOL);
+  const level = Math.max(1, Math.floor(gameState.wave * 0.3 + 5));
+  const pk = newPokemonEntry(chosen.id, chosen.name, chosen.types, level, true); // guaranteed shiny
+  pk.stats = await fetchPokemonStats(chosen.id);
+  pk.statsLoaded = true;
+  pk.currentHp = getMaxHp(pk);
+  gameState.box.push(pk);
+
+  addLog(`✨ SHINY ${chosen.name} obtained from Shiny Gacha!`, 'log-shiny');
+  showGachaResult(pk);
+  renderAll();
+}
+
+// ============================================================
+// BOX SORT
+// ============================================================
+
+let boxSortMode = 'default';
+let boxSortAsc = true;
+
+function sortBox(mode) {
+  if(boxSortMode === mode) { boxSortAsc = !boxSortAsc; }
+  else { boxSortMode = mode; boxSortAsc = mode !== 'level'; }
+  renderPokemonBox();
+  toast(`Sorted by: ${mode}`);
+}
+
+function getBoxSorted() {
+  const arr = [...gameState.box];
+  const dir = boxSortAsc ? 1 : -1;
+  switch(boxSortMode) {
+    case 'level': return arr.sort((a,b)=>dir*(b.level-a.level));
+    case 'name': return arr.sort((a,b)=>dir*a.name.localeCompare(b.name));
+    case 'shiny': return arr.sort((a,b)=>{
+      if(a.isShiny && !b.isShiny) return -1;
+      if(!a.isShiny && b.isShiny) return 1;
+      return b.level-a.level;
+    });
+    case 'type': return arr.sort((a,b)=>dir*a.types[0].localeCompare(b.types[0]));
+    default: return arr;
+  }
 }
 
 function doDaily() {
@@ -2545,7 +2766,7 @@ function showGachaResultMulti(pulls) {
 
 function showPokemonModal(pk) {
   const maxHp = getMaxHp(pk);
-  const equippedItem = ITEMS.find(i=>i.id===gameState.equippedItems[pk.uid]);
+  const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[pk.uid]);
   const evo = EVOLUTIONS[pk.id];
   const inTeam = gameState.team.includes(pk);
 
@@ -2576,6 +2797,34 @@ function showPokemonModal(pk) {
   openModal();
 }
 
+function showPokemonInfoCard(pk) {
+  const maxHp = getMaxHp(pk);
+  const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[pk.uid]);
+  const evo = EVOLUTIONS[pk.id];
+
+  document.getElementById('modal-title').textContent = `📊 ${pk.isShiny?'★ ':''}${pk.name.toUpperCase()} — Stats`;
+  document.getElementById('modal-content').innerHTML = `
+    <div style="display:flex;gap:16px;align-items:center;margin-bottom:12px">
+      <img src="${getSpriteUrl(pk.id,pk.isShiny)}" width="96" height="96" class="${pk.isShiny?'shiny-sprite':''}" onerror="this.src='${getBattleSprite(pk.id,pk.isShiny)}'">
+      <div>
+        ${pk.isShiny ? '<div class="shiny-text">✨ SHINY ✨</div>' : ''}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px">
+          ${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join('')}
+        </div>
+        <div style="font-size:16px;color:var(--gold)">Lv. ${pk.level}</div>
+        <div style="font-size:14px;color:var(--text2)">HP: ${Math.max(0,pk.currentHp)} / ${maxHp}</div>
+        <div style="font-size:14px;color:var(--text2)">EXP: ${pk.exp} / ${pk.expToNext}</div>
+        ${evo ? `<div style="font-size:13px;color:var(--accent)">→ ${evo.name} @ Lv.${evo.level}</div>` : ''}
+        ${equippedItem ? `<div style="font-size:14px;margin-top:4px">${equippedItem.emoji} <span style="color:var(--gold)">${equippedItem.name}</span></div><div style="font-size:12px;color:var(--text2)">${equippedItem.desc}</div>` : '<div style="font-size:13px;color:var(--text2)">No item held</div>'}
+      </div>
+    </div>
+    <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:8px">BASE STATS (at Lv.${pk.level})</div>
+    ${pk.stats ? renderMiniStats(pk) : '<div style="color:var(--text2);font-size:13px">Stats not yet loaded — fight a battle first!</div>'}
+    <button class="btn gold" onclick="closeModal()" style="width:100%;margin-top:14px">Close</button>
+  `;
+  openModal();
+}
+
 function renderMiniStats(pk) {
   if(!pk.stats) return '';
   const statNames = {hp:'HP',attack:'ATK',defense:'DEF','special-attack':'SpA','special-defense':'SpD',speed:'SPD'};
@@ -2595,6 +2844,27 @@ function renderMiniStats(pk) {
 }
 
 function showItemModal(item) {
+  // Rare Candy: pick a pokemon to level up
+  if(item.effect === 'rare_candy') {
+    const count = gameState.inventory[item.id] || 0;
+    document.getElementById('modal-title').textContent = `🍬 Rare Candy — Pick Pokémon`;
+    document.getElementById('modal-content').innerHTML = `
+      <div style="font-size:14px;color:var(--text2);margin-bottom:10px">${item.desc}</div>
+      <div style="font-size:14px;margin-bottom:10px">In Bag: ×${count}</div>
+      <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:8px">GIVE TO:</div>
+      <div class="poke-box">
+        ${gameState.box.map(p=>`
+          <div class="poke-card" onclick="useRareCandy(${p.uid});closeModal()" style="cursor:pointer">
+            <img src="${getSpriteUrl(p.id,p.isShiny)}" width="52" height="52">
+            <span class="cname">${p.name}</span>
+            <span class="clevel">Lv.${p.level}</span>
+          </div>`).join('')}
+      </div>
+    `;
+    openModal();
+    return;
+  }
+
   document.getElementById('modal-title').textContent = `${item.emoji} ${item.name}`;
   const count = gameState.inventory[item.id] || 0;
   document.getElementById('modal-content').innerHTML = `
@@ -2604,11 +2874,12 @@ function showItemModal(item) {
     <div class="poke-box">
       ${gameState.box.map(p=>{
         const eq = gameState.equippedItems[p.uid];
+        const eqItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===eq);
         return `<div class="poke-card" onclick="equipItem('${item.id}',${p.uid});closeModal()" style="cursor:pointer">
           <img src="${getSpriteUrl(p.id,p.isShiny)}" width="52" height="52">
           <span class="cname">${p.name}</span>
           <span class="clevel">Lv.${p.level}</span>
-          ${eq ? `<div style="font-size:13px;color:var(--text2)">${ITEMS.find(i=>i.id===eq)?.emoji||''}</div>` : ''}
+          ${eq ? `<div style="font-size:13px;color:var(--text2)">${eqItem?.emoji||''}</div>` : ''}
         </div>`;
       }).join('')}
     </div>
@@ -2616,9 +2887,30 @@ function showItemModal(item) {
   openModal();
 }
 
+function useRareCandy(uid) {
+  const count = gameState.inventory['rare_candy'] || 0;
+  if(count <= 0) { toast('No Rare Candy left!'); return; }
+  const pk = gameState.box.find(p=>p.uid===uid);
+  if(!pk) return;
+  if(pk.level >= 250) { toast(`${pk.name} is already at max level!`); return; }
+
+  gameState.inventory['rare_candy']--;
+  const oldLevel = pk.level;
+  pk.level++;
+  pk.expToNext = calcExpToNext(pk.level);
+  pk.exp = 0;
+  if(pk.stats) pk.currentHp = getMaxHp(pk);
+
+  addLog(`🍬 Rare Candy used! ${pk.name} grew to Lv.${pk.level}!`, 'log-evolve');
+  toast(`🍬 ${pk.name} is now Lv.${pk.level}!`, 3000);
+  checkEvolution(pk);
+  renderAll();
+}
+
 function openEquipModal(uid) {
   document.getElementById('modal-title').textContent = 'Equip Item';
-  const availableItems = ITEMS.filter(i=>(gameState.inventory[i.id]||0)>0);
+  const allItems = ITEMS.concat(EPIC_ITEMS.filter(i=>i.effect !== 'rare_candy'));
+  const availableItems = allItems.filter(i=>(gameState.inventory[i.id]||0)>0);
   if(availableItems.length===0) {
     document.getElementById('modal-content').innerHTML = '<div style="color:var(--text2)">No items in bag! Use Item Gacha.</div>';
     return;
@@ -2644,7 +2936,7 @@ function equipItem(itemId, uid) {
   // Equip new
   gameState.equippedItems[uid] = itemId;
   gameState.inventory[itemId]--;
-  const item = ITEMS.find(i=>i.id===itemId);
+  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===itemId);
   const pokemon = gameState.box.find(p=>p.uid===uid);
   toast(`${item.emoji} ${item.name} equipped to ${pokemon?.name||'Pokémon'}!`);
   renderAll();
@@ -2837,7 +3129,8 @@ function loadGame() {
     gameState.equippedItems = save.equippedItems || {};
     gameState.dailyClaimed = save.dailyClaimed || false;
     gameState.lastDaily = save.lastDaily || 0;
-    gameState.road = save.road || {active:false,floor:0,winsOnFloor:0,winsNeeded:20};
+    gameState.road = save.road || {active:false,floor:0,winsOnFloor:0,winsNeeded:20,mode:null,farmRegionIdx:0};
+    if(!gameState.road.mode) gameState.road.mode = gameState.road.active ? 'floor' : null;
     pUid = save.pUid || 0;
 
     gameState.box = (save.box || []).map(p => ({
@@ -2883,7 +3176,7 @@ function wipeData() {
 // ============================================================
 
 function trashItem(itemId) {
-  const item = ITEMS.find(i=>i.id===itemId);
+  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===itemId);
   if(!item) return;
   const count = gameState.inventory[itemId] || 0;
   if(count <= 0) return;
@@ -2917,12 +3210,12 @@ function doTrashItem(itemId, amount) {
 // ============================================================
 
 const ROAD_FLOORS = [
-  {name:'Stardust Path',    minFloor:0,  scaleMult:0.8,  winsNeeded:30,  gemsPerWin:0,  gemsPerTen:1,  bonusGems:3},
-  {name:'Nebula Trail',     minFloor:1,  scaleMult:1.0,  winsNeeded:50,  gemsPerWin:0,  gemsPerTen:1,  bonusGems:5},
-  {name:'Cosmic Corridor',  minFloor:2,  scaleMult:1.3,  winsNeeded:75,  gemsPerWin:0,  gemsPerFive:1, bonusGems:8},
-  {name:'Void Passage',     minFloor:3,  scaleMult:1.6,  winsNeeded:100, gemsPerWin:0,  gemsPerFive:1, bonusGems:12},
-  {name:'Astral Summit',    minFloor:4,  scaleMult:2.0,  winsNeeded:150, gemsPerWin:0,  gemsPerThree:1,bonusGems:20},
-  {name:'Celestial Apex',   minFloor:5,  scaleMult:3.0,  winsNeeded:200, gemsPerWin:0,  gemsPerThree:1,bonusGems:35},
+  {name:'Stardust Path',    minFloor:0,  scaleMult:1.0,  winsNeeded:40,  gemsPerWin:0,  gemsPerTen:1,  bonusGems:5,  goldBonus:200,  minLevel:15,  fixedEnemyLevel:20},
+  {name:'Nebula Trail',     minFloor:1,  scaleMult:1.3,  winsNeeded:60,  gemsPerWin:0,  gemsPerTen:1,  bonusGems:10, goldBonus:400,  minLevel:30,  fixedEnemyLevel:40},
+  {name:'Cosmic Corridor',  minFloor:2,  scaleMult:1.7,  winsNeeded:80,  gemsPerWin:0,  gemsPerFive:1, bonusGems:18, goldBonus:800,  minLevel:60,  fixedEnemyLevel:75},
+  {name:'Void Passage',     minFloor:3,  scaleMult:2.2,  winsNeeded:100, gemsPerWin:0,  gemsPerFive:1, bonusGems:28, goldBonus:1500, minLevel:100, fixedEnemyLevel:120},
+  {name:'Astral Summit',    minFloor:4,  scaleMult:3.0,  winsNeeded:150, gemsPerWin:0,  gemsPerThree:1,bonusGems:50, goldBonus:3000, minLevel:150, fixedEnemyLevel:180},
+  {name:'Celestial Apex',   minFloor:5,  scaleMult:4.5,  winsNeeded:200, gemsPerWin:0,  gemsPerThree:1,bonusGems:100,goldBonus:8000, minLevel:200, fixedEnemyLevel:250},
 ];
 
 let roadBattleActive = false;
@@ -2941,41 +3234,90 @@ function renderRoadUI() {
   const avgLvl = getAvgTeamLevel();
   const road = gameState.road;
 
-  let html = `
-    <div class="road-header">💎 DIAMOND ROAD 💎</div>
+  let html = `<div class="road-header">💎 DIAMOND ROAD 💎</div>
     <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:10px">
-      Your avg level: <span style="color:var(--gold)">Lv.${avgLvl}</span><br>
-      <span style="color:var(--text2)">Enemies scale to your team. Gems earned slowly — it's a grind.</span>
-    </div>
-  `;
+      Your avg level: <span style="color:var(--gold)">Lv.${avgLvl}</span>
+    </div>`;
 
-  if(road.active) {
+  // ── ACTIVE FLOOR ──
+  if(road.active && road.mode === 'floor') {
     const floor = ROAD_FLOORS[road.floor];
     const pct = Math.floor((road.winsOnFloor / floor.winsNeeded)*100);
     const nextGemIn = floor.gemsPerThree ? `💎 every 3 wins` : floor.gemsPerFive ? `💎 every 5 wins` : `💎 every 10 wins`;
     html += `
       <div class="road-floor-card active-floor">
         <div class="road-floor-title">▶ ${floor.name}</div>
-        <div class="road-floor-lvl">Enemy Lv.~${Math.floor(avgLvl*floor.scaleMult)}</div>
-        <div class="road-floor-reward">${nextGemIn} • ${floor.bonusGems} 💎 on clear</div>
+        <div class="road-floor-lvl">Enemy Lv.${floor.fixedEnemyLevel} (fixed) · ${nextGemIn}</div>
+        <div class="road-floor-reward">${floor.bonusGems} 💎 on clear · +${floor.goldBonus}💰/win</div>
         <div class="road-progress-bar"><div class="road-progress-fill" style="width:${pct}%"></div></div>
         <div style="font-size:13px;color:var(--text2);margin-top:3px">${road.winsOnFloor}/${floor.winsNeeded} wins</div>
       </div>
-      <button class="btn" style="width:100%;border-color:#ef5350;color:#ef5350;margin-bottom:8px" onclick="exitRoad()">🚪 Exit Road</button>
+      <button class="btn" style="width:100%;border-color:#ef5350;color:#ef5350;margin-bottom:12px" onclick="exitRoad()">🚪 Exit Road</button>
     `;
-  } else {
-    html += `<div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">Grind for 💎 Gems.<br>Enemies scale to your team level.</div>`;
+  }
+
+  // ── ACTIVE FARM ──
+  else if(road.active && road.mode === 'farm') {
+    const reg = REGIONS[road.farmRegionIdx || 0];
+    const farmLvl = Math.max(1, avgLvl - 3);
+    html += `
+      <div class="road-floor-card active-floor" style="border-color:#66bb6a">
+        <div class="road-floor-title" style="color:#66bb6a">🌾 FARMING: ${reg.name}</div>
+        <div class="road-floor-lvl">Enemy Lv.~${farmLvl} (your avg ${avgLvl} − 3)</div>
+        <div class="road-floor-reward" style="color:#a5d6a7">Good EXP &amp; Gold grind · scales as you level up</div>
+      </div>
+      <button class="btn" style="width:100%;border-color:#ef5350;color:#ef5350;margin-bottom:12px" onclick="exitRoad()">🚪 Stop Farming</button>
+    `;
+  }
+
+  // ── FLOOR SELECT ──
+  else {
+    html += `
+      <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:6px;text-align:center">DIAMOND ROAD FLOORS</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center">Enemies have fixed levels — you need minimum avg level to enter.</div>
+    `;
     ROAD_FLOORS.forEach((floor, idx) => {
-      const enemyLvl = Math.floor(avgLvl * floor.scaleMult);
       const rate = floor.gemsPerThree ? '1💎/3 wins' : floor.gemsPerFive ? '1💎/5 wins' : '1💎/10 wins';
+      const locked = avgLvl < floor.minLevel;
       html += `
-        <div class="road-floor-card" onclick="enterRoad(${idx})">
-          <div class="road-floor-title">${floor.name}</div>
-          <div class="road-floor-lvl">Enemy Lv.~${enemyLvl} · ${floor.winsNeeded} wins to clear</div>
-          <div class="road-floor-reward">${rate} · ${floor.bonusGems}💎 bonus on clear</div>
+        <div class="road-floor-card ${locked ? 'locked-floor' : ''}" ${locked ? '' : `onclick="enterRoad(${idx})"`} style="${locked ? 'opacity:0.5;cursor:not-allowed' : ''}">
+          <div class="road-floor-title">${locked ? '🔒 ' : ''}${floor.name}</div>
+          <div class="road-floor-lvl">Enemy Lv.${floor.fixedEnemyLevel} · ${floor.winsNeeded} wins to clear ${locked ? `· <span style="color:#ef5350">Need avg Lv.${floor.minLevel}</span>` : ''}</div>
+          <div class="road-floor-reward">${rate} · ${floor.bonusGems}💎 on clear · +${floor.goldBonus}💰/win</div>
         </div>
       `;
     });
+
+    // ── FARM ROUTES ──
+    const unlockedRegions = REGIONS.filter(r => gameState.wave >= r.minWave);
+    if(unlockedRegions.length > 0) {
+      html += `
+        <div style="font-family:'Press Start 2P';font-size:7px;color:#66bb6a;margin:12px 0 6px;text-align:center">🌾 FARM ROUTES</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center">Replay beaten regions to grind EXP &amp; Gold.</div>
+      `;
+      unlockedRegions.forEach((reg, i) => {
+        const regIdx = REGIONS.indexOf(reg);
+        const farmLvl = Math.max(1, avgLvl - 3);
+        html += `
+          <div class="road-floor-card" onclick="enterFarmRoute(${regIdx})" style="border-color:#2e7d32">
+            <div class="road-floor-title" style="color:#66bb6a">🌾 ${reg.name}</div>
+            <div class="road-floor-lvl">Enemy Lv.~${farmLvl} (scales with your team) · Unlocked at Wave ${reg.minWave}</div>
+            <div class="road-floor-reward" style="color:#a5d6a7">Infinite grind · Gold &amp; EXP</div>
+          </div>
+        `;
+      });
+    }
+
+    // ── RAYQUAZA BOSS AT BOTTOM ──
+    html += `
+      <div style="font-family:'Press Start 2P';font-size:7px;color:#ff9e40;margin:14px 0 6px;text-align:center">⛰️ SCALES PEAK</div>
+      <div class="road-floor-card" style="border-color:#ff6d00;background:linear-gradient(135deg,rgba(80,20,0,0.6),rgba(30,5,0,0.4))">
+        <div class="road-floor-title" style="color:#ff9e40">🐉 TITAN RAYQUAZA Lv.270</div>
+        <div class="road-floor-lvl" style="color:#ffb74d">The Sky Titan slumbers at the peak.</div>
+        <div class="road-floor-reward" style="color:#ffd700">Capture it! · Shiny chance 1/25 · Cost: 💎150</div>
+        <button class="btn" style="border-color:#ff6d00;color:#ff9e40;width:100%;margin-top:8px" onclick="startEventBoss()">⚔️ CHALLENGE THE TITAN</button>
+      </div>
+    `;
   }
 
   el.innerHTML = html;
@@ -2983,28 +3325,84 @@ function renderRoadUI() {
 
 function enterRoad(floorIdx) {
   const avgLvl = getAvgTeamLevel();
+  const floor = ROAD_FLOORS[floorIdx];
+  if(avgLvl < floor.minLevel) {
+    toast(`Need avg Lv.${floor.minLevel} to enter ${floor.name}!`, 3000);
+    return;
+  }
   gameState.road.active = true;
+  gameState.road.mode = 'floor';
   gameState.road.floor = floorIdx;
   gameState.road.winsOnFloor = 0;
-  gameState.road.winsNeeded = ROAD_FLOORS[floorIdx].winsNeeded;
+  gameState.road.winsNeeded = floor.winsNeeded;
 
-  // Switch arena to road mode
   document.getElementById('arena').classList.add('road-mode');
-  addLog(`💎 Entered ${ROAD_FLOORS[floorIdx].name}!`, 'log-evolve');
-  toast(`💎 Diamond Road: ${ROAD_FLOORS[floorIdx].name}!`, 3000);
+  addLog(`💎 Entered ${floor.name}! (Enemy Lv.${floor.fixedEnemyLevel})`, 'log-evolve');
+  toast(`💎 Diamond Road: ${floor.name}!`, 3000);
 
-  // Spawn road enemy
   spawnRoadEnemy();
   renderRoadUI();
-  switchTab('team'); // switch back to team view to see battle
+  switchTab('team');
+}
+
+function enterFarmRoute(regionIdx) {
+  const reg = REGIONS[regionIdx];
+  if(gameState.wave < reg.minWave) {
+    toast(`You haven't reached ${reg.name} yet!`, 3000);
+    return;
+  }
+  gameState.road.active = true;
+  gameState.road.mode = 'farm';
+  gameState.road.farmRegionIdx = regionIdx;
+
+  document.getElementById('arena').classList.add('road-mode');
+  const wave = reg.minWave;
+  const enemyLvl = Math.min(250, Math.max(1, Math.floor(wave * 0.8 + 2)));
+  addLog(`🌾 Farming ${reg.name}! Enemy Lv.~${enemyLvl}`, 'log-heal');
+  toast(`🌾 Farming ${reg.name}!`, 2500);
+
+  spawnFarmEnemy();
+  renderRoadUI();
+  switchTab('team');
+}
+
+async function spawnFarmEnemy() {
+  if(!gameState.road.active || gameState.road.mode !== 'farm') return;
+  const regIdx = gameState.road.farmRegionIdx || 0;
+  const reg = REGIONS[regIdx];
+  const avgLvl = getAvgTeamLevel();
+  // Always spawn ~3 levels under team average, clamped to reasonable range
+  const targetLvl = Math.max(1, avgLvl - 3);
+  const lvl = Math.max(1, targetLvl + Math.floor((Math.random()-0.5)*4));
+  const pool = reg.pool;
+  const chosen = pool[Math.floor(Math.random()*pool.length)];
+  const isShiny = Math.random() < 1/512;
+
+  const enemy = newPokemonEntry(chosen.id, chosen.name, chosen.types, lvl, isShiny);
+  enemy.stats = await fetchPokemonStats(chosen.id);
+  enemy.statsLoaded = true;
+  enemy.currentHp = getMaxHp(enemy);
+  currentEnemy = enemy;
+
+  const flash = document.getElementById('encounter-flash');
+  flash.style.transition = 'opacity 0.05s';
+  flash.style.opacity = '0.5';
+  setTimeout(()=>{ flash.style.transition = 'opacity 1.2s'; flash.style.opacity = '0'; }, 120);
+
+  updateEnemyUI();
+  if(isShiny) {
+    addLog(`✨ Farm SHINY ${chosen.name}! (Lv.${lvl})`, 'log-shiny');
+  } else {
+    addLog(`🌾 ${chosen.name} (Lv.${lvl}) appeared!`);
+  }
 }
 
 function exitRoad() {
   gameState.road.active = false;
+  gameState.road.mode = null;
   document.getElementById('arena').classList.remove('road-mode');
   addLog('Returned to normal battles.', 'log-heal');
   toast('Returned to normal battles.');
-  // Spawn normal enemy
   currentEnemy = null;
   setTimeout(spawnEnemy, 800);
   renderRoadUI();
@@ -3021,7 +3419,9 @@ async function spawnRoadEnemy() {
   const chosen = pool[Math.floor(Math.random()*pool.length)];
   const isShiny = Math.random() < 1/512;
 
-  const lvl = Math.max(1, Math.floor(avgLvl * floor.scaleMult + (Math.random()-0.5)*4));
+  // Use fixed enemy level (not avg-scaled) to prevent farming lower floors trivially
+  const baseLvl = floor.fixedEnemyLevel;
+  const lvl = Math.max(1, baseLvl + Math.floor((Math.random()-0.5)*6));
   const enemy = newPokemonEntry(chosen.id, chosen.name, chosen.types, lvl, isShiny);
   enemy.stats = await fetchPokemonStats(chosen.id);
   enemy.statsLoaded = true;
