@@ -4376,6 +4376,9 @@ function showTradeCode_uid(uid) {
 function showTradeCode(pk) {
   const code = encodePokemonTrade(pk);
   const cosmic = isCosmic(pk);
+  // Store code privately — not shown in DOM as plain text
+  window._pendingTradeCode = code;
+  window._pendingTradeUid = pk.uid;
   document.getElementById('trade-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
       <img src="${getSpriteUrl(pk.id,pk.isShiny)}" width="72" height="72" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}" onerror="this.src='${getBattleSprite(pk.id,pk.isShiny)}'">
@@ -4385,56 +4388,64 @@ function showTradeCode(pk) {
         <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
       </div>
     </div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">📤 Trade Code (share this with the recipient):</div>
-    <div class="trade-code-display" id="trade-code-val">${code}</div>
-    <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae" onclick="copyTradeCode()">📋 Copy Code</button>
-      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350" onclick="confirmSendTrade(${pk.uid})">✅ Confirm Send</button>
+    <div style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:12px;margin-bottom:10px;text-align:center">
+      <div style="font-size:15px;color:#69f0ae;margin-bottom:4px">📤 Ready to Send</div>
+      <div style="font-size:13px;color:var(--text2)">Click <b style="color:#ef5350">Confirm Send</b> to remove ${pk.name} from your box.<br>The trade code will be <b style="color:#ffd700">automatically copied</b> to your clipboard so you can share it.</div>
     </div>
-    <div style="font-size:12px;color:var(--text2);margin-top:8px;text-align:center">⚠️ Clicking "Confirm Send" removes the Pokémon from your box!</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350;font-size:16px" onclick="confirmSendAndCopy()">✅ Confirm Send &amp; Copy</button>
+      <button class="btn" style="flex:1" onclick="showTradePickPokemon()">← Back</button>
+    </div>
+    <div style="font-size:12px;color:#666;margin-top:8px;text-align:center">⚠️ This removes the Pokémon from your box permanently.</div>
   `;
 }
 
-function copyTradeCode() {
-  const el = document.getElementById('trade-code-val');
-  if(!el) return;
-  try {
-    navigator.clipboard.writeText(el.textContent).then(()=>toast('📋 Code copied!', 2000)).catch(()=>{
-      const ta = document.createElement('textarea');
-      ta.value = el.textContent;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      ta.remove();
-      toast('📋 Code copied!', 2000);
-    });
-  } catch(e) { toast('Copy manually from the box above.', 3000); }
-}
-
-function confirmSendTrade(uid) {
+function confirmSendAndCopy() {
+  const uid = window._pendingTradeUid;
+  const code = window._pendingTradeCode;
+  if(!uid || !code) { toast('Trade data lost, please try again.', 2500); return; }
   const pk = gameState.box.find(p=>p.uid===uid);
   if(!pk) { toast('Pokémon not found!', 2000); return; }
   if(gameState.box.length <= 1) { toast("Can't trade your last Pokémon!", 2000); return; }
-  if(!confirm(`Remove ${pk.name} from your box to complete the trade?`)) return;
+  if(!confirm(`Remove ${pk.name} from your box? The code will be copied to your clipboard.`)) return;
 
-  // Remove from box and team
-  const teamIdx = gameState.team.indexOf(pk);
-  if(teamIdx >= 0) {
-    if(gameState.team.length <= 1) { toast("Can't trade your last team member!", 2000); return; }
-    gameState.team.splice(teamIdx, 1);
-    if(gameState.currentFighterIdx >= gameState.team.length) gameState.currentFighterIdx = 0;
-  }
-  const boxIdx = gameState.box.indexOf(pk);
-  if(boxIdx >= 0) gameState.box.splice(boxIdx, 1);
+  // Remove from box and team first
+  gameState.box = gameState.box.filter(p=>p.uid!==uid);
+  gameState.team = gameState.team.filter(p=>p.uid!==uid);
+  if(gameState.equippedItems[uid]) delete gameState.equippedItems[uid];
+  if(gameState.currentFighterIdx >= gameState.team.length) gameState.currentFighterIdx = Math.max(0, gameState.team.length-1);
 
-  toast(`📤 ${pk.name} sent! Give the code to your trade partner.`, 4000);
+  // Clear pending so it can't be reused
+  window._pendingTradeCode = null;
+  window._pendingTradeUid = null;
+
+  // Auto-copy code to clipboard
+  const doCopy = (text) => {
+    try {
+      navigator.clipboard.writeText(text).then(() => {
+        toast('✅ ' + pk.name + ' sent! Code copied to clipboard 📋', 4000);
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); ta.remove();
+        toast('✅ ' + pk.name + ' sent! Code copied to clipboard 📋', 4000);
+      });
+    } catch(e) { toast('✅ ' + pk.name + ' sent! (Copy failed — paste manually)', 4000); }
+  };
+  doCopy(code);
+
   renderAll();
+  saveGame();
+
   document.getElementById('trade-content').innerHTML = `
-    <div style="text-align:center;padding:20px">
-      <div style="font-size:40px;margin-bottom:10px">✅</div>
-      <div style="font-size:16px;color:#69f0ae">${pk.name} sent successfully!</div>
-      <div style="font-size:13px;color:var(--text2);margin-top:8px">Share the trade code with your partner so they can receive it.</div>
-    </div>`;
+    <div style="text-align:center;padding:16px">
+      <div style="font-size:40px;margin-bottom:8px">📋</div>
+      <div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:8px">TRADE CODE COPIED!</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:16px">${pk.name} has left your box.<br>Paste the code to the recipient!</div>
+      <button class="btn" style="width:100%" onclick="showTradePickPokemon()">← Trade Another</button>
+    </div>
+  `;
 }
 
 function showTradeReceive() {
