@@ -848,15 +848,112 @@ body::before {
 .redeem-btn-row { display: flex; gap: 10px; justify-content: center; }
 
 @media (max-width: 900px) { #right-panel { width: 280px; } }
+
+/* MULTI-SAVE OVERLAY */
+#saves-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#saves-overlay.active { display: flex; }
+.saves-box {
+  background: linear-gradient(135deg, #0d0d25, #1a0a2e);
+  border: 2px solid var(--accent);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 540px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.save-slot-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.save-slot-card:hover { border-color: var(--accent); }
+.save-slot-card.empty { border-style: dashed; opacity: 0.6; }
+.save-mini-team { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
+.save-mini-team img { width: 36px; height: 36px; image-rendering: pixelated; }
+
+/* TRADE OVERLAY */
+#trade-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 900;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+#trade-overlay.active { display: flex; }
+.trade-box {
+  background: linear-gradient(135deg, #0d1525, #0a2010);
+  border: 2px solid #00c853;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 480px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.trade-code-display {
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #00c853;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #69f0ae;
+  word-break: break-all;
+  text-align: center;
+  margin: 10px 0;
+  max-height: 120px;
+  overflow-y: auto;
+}
+#trade-receive-input {
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  color: #69f0ae;
+  font-family: 'VT323', monospace;
+  font-size: 16px;
+  padding: 10px;
+  resize: vertical;
+  min-height: 80px;
+  outline: none;
+  margin-bottom: 10px;
+}
+#trade-receive-input:focus { border-color: #00c853; }
 </style>
 </head>
 <body>
 
 <!-- STARTER SCREEN -->
 <div id="starter-screen">
-  <h1>⚡ POKÉMON IDLE ⚡</h1>
-  <p>Choose your starter!</p>
-  <div class="starter-grid" id="starter-grid"></div>
+  <div id="save-picker" style="display:none;width:100%;max-width:520px;padding:0 16px">
+    <h1 style="text-align:center;margin-bottom:6px">⚡ POKÉMON IDLE ⚡</h1>
+    <p style="text-align:center;margin-bottom:20px">Continue your adventure or start fresh!</p>
+    <div id="save-picker-list"></div>
+    <button onclick="showStarterPicker()" style="width:100%;margin-top:10px;background:linear-gradient(135deg,rgba(239,83,80,0.15),rgba(239,83,80,0.05));border:1px solid #ef5350;color:#ef5350;padding:10px;border-radius:8px;cursor:pointer;font-family:'VT323',monospace;font-size:18px;letter-spacing:1px">🌱 Start Brand New Game</button>
+  </div>
+  <div id="starter-picker" style="display:none;text-align:center">
+    <h1>⚡ POKÉMON IDLE ⚡</h1>
+    <p>Choose your starter!</p>
+    <div class="starter-grid" id="starter-grid"></div>
+    <button onclick="showSavePicker()" style="margin-top:16px;background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2);padding:6px 18px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px">← Back</button>
+  </div>
 </div>
 
 <!-- MAIN GAME -->
@@ -869,6 +966,7 @@ body::before {
     <div class="resource"><span class="icon">🏆</span><span class="val" id="res-wins">0</span> Wins</div>
     <div style="margin-left:auto;display:flex;gap:8px">
       <button onclick="openRedeemOverlay()" style="background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,165,0,0.1));border:1px solid var(--gold);color:var(--gold);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px;transition:all 0.2s" onmouseover="this.style.boxShadow='0 0 12px rgba(255,215,0,0.4)'" onmouseout="this.style.boxShadow=''">🎁 REDEEM</button>
+      <button onclick="openSavesOverlay()" style="background:linear-gradient(135deg,rgba(79,195,247,0.2),rgba(79,195,247,0.05));border:1px solid var(--accent);color:var(--accent);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px">💾 SAVES</button>
       <button onclick="openDebugPanel()" style="background:rgba(255,0,0,0.15);border:1px solid #ef5350;color:#ef5350;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px">🛠 DEBUG</button>
     </div>
   </div>
@@ -938,7 +1036,10 @@ body::before {
           <button class="btn gold" id="auto-btn" onclick="toggleAuto()">⏸ PAUSE</button>
           <button class="btn" onclick="switchNextPokemon()">➡ NEXT PKM</button>
         </div>
-        <div style="margin-top:8px">
+        <div style="margin-top:6px">
+          <button class="btn" onclick="openTradeOverlay()" style="border-color:#00c853;color:#69f0ae;width:100%">🔄 Trade Pokémon</button>
+        </div>
+        <div style="margin-top:6px">
           <button class="btn" onclick="confirmWipeData()" style="border-color:#ef5350;color:#ef5350;width:100%">🗑 Reset Save</button>
         </div>
         <div style="margin-top:6px">
@@ -998,7 +1099,7 @@ body::before {
         </div>
         <div class="gacha-section" style="border-color:#e040fb;background:linear-gradient(135deg,rgba(60,0,100,0.4),rgba(20,0,50,0.2))">
           <h3 style="color:#e040fb">💠 EPIC ITEM GACHA</h3>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center"><span style="color:#e040fb">20% chance for epic items 💠</span><br>Includes <span style="color:#ff69b4">Rare Candy 🍬</span> &amp; powerful gear</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center"><span style="color:#e040fb">20% chance for epic items 💠</span><br>Includes <span style="color:#ff69b4">Rare Candy 🍬</span> &amp; powerful gear<br><span style="color:#ff69b4;font-size:12px">1% ultra rare: Max Candy 🍭</span></div>
           <div class="gacha-btns">
             <button class="btn" style="border-color:#e040fb;color:#e040fb" onclick="doEpicItemGacha(1)">× 1<br><span style="font-size:13px;color:var(--gold)">💰 5,000</span></button>
             <button class="btn" style="border-color:#e040fb;color:#e040fb;background:rgba(80,0,120,0.2)" onclick="doEpicItemGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💰 40,000</span></button>
@@ -1007,6 +1108,13 @@ body::before {
         <div class="gacha-section" style="border-color:#00c853;background:linear-gradient(135deg,rgba(0,50,20,0.4),rgba(0,20,10,0.2))">
           <h3 style="color:#69f0ae">🌟 FREE DAILY</h3>
           <button class="btn" style="border-color:#00c853;color:#69f0ae;width:100%;margin-top:4px" id="daily-btn" onclick="doDaily()">CLAIM FREE PULL</button>
+        </div>
+        <div class="gacha-section" style="border-color:#ffd700;background:linear-gradient(135deg,rgba(80,60,0,0.4),rgba(40,30,0,0.2))">
+          <h3 style="color:#ffd700">💰 GOLD SHINY PULL</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center"><span style="color:#ffd700">Spend 10,000,000 Gold for a guaranteed Shiny!</span><br><span style="color:var(--text2)">From Epic pool · Same quality as Shiny Gacha</span></div>
+          <div class="gacha-btns">
+            <button class="btn" style="border-color:#ffd700;color:#ffd700;width:100%" onclick="doGoldShinyPull()">× 1<br><span style="font-size:13px;color:var(--gold)">💰 10,000,000</span></button>
+          </div>
         </div>
       </div>
 
@@ -1028,6 +1136,26 @@ body::before {
   <div id="bottom-bar">
     <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);writing-mode:vertical-rl;text-orientation:mixed;margin-right:4px">TEAM</div>
     <div id="bottom-slots" style="display:flex;gap:8px;flex:1;overflow-x:auto;padding-bottom:2px"></div>
+  </div>
+</div>
+
+<!-- SAVES OVERLAY -->
+<div id="saves-overlay">
+  <div class="saves-box">
+    <div style="font-family:'Press Start 2P';font-size:11px;color:var(--accent);text-align:center;margin-bottom:16px">💾 SAVE SLOTS</div>
+    <div id="saves-list"></div>
+    <div style="display:flex;gap:8px;margin-top:14px;justify-content:center">
+      <button class="btn" onclick="closeSavesOverlay()" style="flex:1;font-size:18px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- TRADE OVERLAY -->
+<div id="trade-overlay">
+  <div class="trade-box">
+    <div style="font-family:'Press Start 2P';font-size:10px;color:#69f0ae;text-align:center;margin-bottom:14px">🔄 TRADE POKÉMON</div>
+    <div id="trade-content"></div>
+    <button class="btn" onclick="closeTradeOverlay()" style="width:100%;margin-top:10px;font-size:18px">Close</button>
   </div>
 </div>
 
@@ -1246,7 +1374,8 @@ const ITEMS = [
 ];
 
 const EPIC_ITEMS = [
-  {id:'rare_candy', name:'Rare Candy', emoji:'🍬', desc:'Instantly gives one Pokémon a full level up! Use from bag.', effect:'rare_candy'},
+  {id:'rare_candy', name:'Rare Candy', emoji:'🍬', desc:'Instantly levels up a Pokémon by 1. Only works up to Lv.175!', effect:'rare_candy'},
+  {id:'max_candy', name:'Max Candy', emoji:'🍭', desc:'Instantly levels up any Pokémon by 1. Works up to Lv.250!', effect:'max_candy'},
   {id:'mega_stone', name:'Mega Stone', emoji:'💎', desc:'+40% all stats. Powerful but balanced!', effect:'mega_stone', value:1.4},
   {id:'soul_dew', name:'Soul Dew', emoji:'💠', desc:'+35% Sp.Atk and Sp.Def', effect:'soul_dew', value:1.35},
   {id:'draco_plate', name:'Draco Plate', emoji:'🐉', desc:'+45% all stats for Dragon-type. +20% for others.', effect:'draco_plate', value:1.45},
@@ -1266,7 +1395,8 @@ let gameState = {
   gold: 500, gems: 15, wins: 0, wave: 1, autoBattle: true,
   team: [], box: [], inventory: {}, equippedItems: {},
   currentFighterIdx: 0, dailyClaimed: false, lastDaily: 0,
-  road: { active: false, floor: 0, winsOnFloor: 0, winsNeeded: 30, mode: null, farmRegionIdx: 0 }
+  road: { active: false, floor: 0, winsOnFloor: 0, winsNeeded: 30, mode: null, farmRegionIdx: 0 },
+  trainerName: 'Trainer'
 };
 
 let currentEnemy = null;
@@ -1447,6 +1577,7 @@ function newPokemonEntry(id, name, types, level, isShiny=false) {
     uid: ++pUid, id, name, types, level, isShiny,
     currentHp: null, statsLoaded: false, stats: null,
     exp: 0, expToNext: calcExpToNext(level), ivs: generateIVs(),
+    ot: gameState ? (gameState.trainerName || 'Trainer') : 'Trainer',
   };
   return pk;
 }
@@ -1543,7 +1674,139 @@ function getBattleSprite(id, isShiny=false) {
 // ============================================================
 
 function initStarterScreen() {
-  if(loadGame() && gameState.box.length > 0) {
+  const saves = getAllSaves().filter(Boolean);
+  const hasAutoSave = loadGame() && gameState.box.length > 0;
+
+  // If there are named saves OR an auto-save, show the picker
+  if(saves.length > 0 || hasAutoSave) {
+    // Reset gameState that loadGame() may have just populated — we want the user to choose
+    if(hasAutoSave) {
+      // keep gameState loaded as a "last auto-save" option, but show picker
+    }
+    showSavePicker(hasAutoSave);
+    return;
+  }
+
+  // No saves at all — go straight to starter picker
+  showStarterPicker();
+}
+
+function showSavePicker(hasAutoSave) {
+  const screen = document.getElementById('starter-screen');
+  screen.style.display = 'flex';
+  screen.style.flexDirection = 'column';
+  screen.style.alignItems = 'center';
+  screen.style.justifyContent = 'center';
+  document.getElementById('save-picker').style.display = 'block';
+  document.getElementById('starter-picker').style.display = 'none';
+
+  const saves = getAllSaves();
+  const list = document.getElementById('save-picker-list');
+  let html = '';
+
+  // Auto-save slot (localStorage main save)
+  const autoRaw = localStorage.getItem(SAVE_KEY);
+  if(autoRaw) {
+    try {
+      const auto = JSON.parse(autoRaw);
+      if(auto.box && auto.box.length > 0) {
+        const teamUids = auto.teamUids || [];
+        const teamPokemon = teamUids.map(uid => (auto.box||[]).find(p=>p.uid===uid)).filter(Boolean);
+        const teamImgs = teamPokemon.map(p =>
+          `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.isShiny?'shiny/':''}${p.id}.png" title="${p.name} Lv.${p.level}" style="width:36px;height:36px;image-rendering:pixelated">`
+        ).join('');
+        html += `<div class="save-slot-card" style="cursor:pointer;border-color:var(--accent)" onclick="loadAutoSaveAndPlay()">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent)">⚡ AUTO-SAVE</div>
+              <div style="font-size:13px;color:var(--text2);margin-top:3px">OT: ${auto.trainerName||'Trainer'} · Wave ${auto.wave||1} · ${auto.box.length} Pokémon</div>
+              <div style="font-size:12px;color:var(--text2)">💰${formatNum(auto.gold||0)} · 💎${auto.gems||0} · 🏆${auto.wins||0}</div>
+              <div class="save-mini-team" style="margin-top:4px">${teamImgs}</div>
+            </div>
+            <div style="font-family:'Press Start 2P';font-size:9px;color:var(--accent);padding:8px">▶ PLAY</div>
+          </div>
+        </div>`;
+      }
+    } catch(e) {}
+  }
+
+  // Named save slots
+  for(let i = 0; i < MAX_SAVES; i++) {
+    const s = saves[i];
+    if(!s) continue;
+    const teamUids = s.teamUids || [];
+    const teamPokemon = teamUids.map(uid => (s.box||[]).find(p=>p.uid===uid)).filter(Boolean);
+    const teamImgs = teamPokemon.map(p =>
+      `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.isShiny?'shiny/':''}${p.id}.png" title="${p.name} Lv.${p.level}" style="width:36px;height:36px;image-rendering:pixelated">`
+    ).join('');
+    const date = new Date(s.savedAt);
+    const dateStr = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+    html += `<div class="save-slot-card" style="cursor:pointer" onclick="loadSaveSlotFromPicker(${i})">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${s.name}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:3px">OT: ${s.trainerName||'Trainer'} · Wave ${s.wave||1} · ${s.box?s.box.length:0} Pokémon</div>
+          <div style="font-size:12px;color:var(--text2)">💰${formatNum(s.gold||0)} · 💎${s.gems||0} · 🏆${s.wins||0}</div>
+          <div style="font-size:11px;color:#555;margin-bottom:4px">${dateStr}</div>
+          <div class="save-mini-team" style="margin-top:2px">${teamImgs}</div>
+        </div>
+        <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);padding:8px">▶ PLAY</div>
+      </div>
+    </div>`;
+  }
+
+  if(!html) {
+    // No saves found at all — skip to starter
+    showStarterPicker();
+    return;
+  }
+
+  list.innerHTML = html;
+}
+
+function loadAutoSaveAndPlay() {
+  // gameState already loaded by loadGame() in initStarterScreen
+  document.getElementById('starter-screen').style.display = 'none';
+  const game = document.getElementById('game');
+  game.style.display = 'flex';
+  game.style.flexDirection = 'column';
+  if(gameState.road.active) document.getElementById('arena').classList.add('road-mode');
+  renderAll();
+  if(gameState.road.active) {
+    if(gameState.road.mode === 'farm') spawnFarmEnemy();
+    else spawnRoadEnemy();
+  } else spawnEnemy();
+  startBattle();
+  toast('✅ Auto-save loaded!');
+}
+
+function loadSaveSlotFromPicker(slotIdx) {
+  const saves = getAllSaves();
+  const s = saves[slotIdx];
+  if(!s) return;
+  try {
+    if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
+    bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false;
+    currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null;
+    battlePaused = false;
+    playerAttackCooldown = 0; enemyAttackCooldown = 0;
+
+    gameState.gold = s.gold || 500;
+    gameState.gems = s.gems || 15;
+    gameState.wins = s.wins || 0;
+    gameState.wave = s.wave || 1;
+    gameState.inventory = s.inventory || {};
+    gameState.equippedItems = s.equippedItems || {};
+    gameState.dailyClaimed = s.dailyClaimed || false;
+    gameState.lastDaily = s.lastDaily || 0;
+    gameState.road = s.road || {active:false,floor:0,winsOnFloor:0,winsNeeded:20,mode:null,farmRegionIdx:0};
+    if(!gameState.road.mode) gameState.road.mode = gameState.road.active ? 'floor' : null;
+    gameState.trainerName = s.trainerName || 'Trainer';
+    pUid = s.pUid || 0;
+    gameState.box = (s.box || []).map(p => ({ ...p, statsLoaded: !!p.stats, ivs: p.ivs || generateIVs(), ot: p.ot || s.trainerName || 'Trainer' }));
+    gameState.team = (s.teamUids || []).map(uid => gameState.box.find(p=>p.uid===uid)).filter(Boolean);
+    gameState.currentFighterIdx = Math.min(s.currentFighterIdx||0, Math.max(0,gameState.team.length-1));
+
     document.getElementById('starter-screen').style.display = 'none';
     const game = document.getElementById('game');
     game.style.display = 'flex';
@@ -1555,9 +1818,18 @@ function initStarterScreen() {
       else spawnRoadEnemy();
     } else spawnEnemy();
     startBattle();
-    toast('✅ Save loaded!');
-    return;
-  }
+    toast(`✅ Loaded: ${s.name} (Wave ${gameState.wave})`, 3000);
+  } catch(e) { console.warn(e); toast('❌ Failed to load!', 3000); }
+}
+
+function showStarterPicker() {
+  const screen = document.getElementById('starter-screen');
+  screen.style.display = 'flex';
+  screen.style.flexDirection = 'column';
+  screen.style.alignItems = 'center';
+  screen.style.justifyContent = 'center';
+  document.getElementById('save-picker').style.display = 'none';
+  document.getElementById('starter-picker').style.display = 'block';
 
   const grid = document.getElementById('starter-grid');
   grid.innerHTML = '';
@@ -1748,6 +2020,7 @@ function doEnemyAttack(player) {
 function enemyDefeated(player) {
   if(bossBattleActive && currentEnemy?.isBoss) {
     if(vrBattleActive && currentEnemy?._isVR) handleVRDefeated(player);
+    else if(currentEnemy?._isGiratina) handleGiratinaDefeated(player);
     else handleBossDefeated(player);
     return;
   }
@@ -1840,6 +2113,7 @@ function playerPokemonFainted(player) {
       renderBottomBar();
     } else {
       if(vrBattleActive) handleVRFailed();
+      else if(giratinaBattleActive) handleGiratinaFailed();
       else handleBossFailed();
     }
     return;
@@ -2257,7 +2531,7 @@ async function doEpicGacha(count) {
   for(let i=0; i<count; i++) {
     const chosen = pickFromPool(EPIC_GACHA_POOL);
     const isShiny = Math.random() < 1/64;
-    const level = Math.max(1, Math.floor(gameState.wave * 0.3 + 5));
+    const level = Math.min(175, Math.max(1, Math.floor(gameState.wave * 0.3 + 5)));
     const pk = newPokemonEntry(chosen.id, chosen.name, chosen.types, level, isShiny);
     pk.stats = await fetchPokemonStats(chosen.id);
     pk.statsLoaded = true;
@@ -2562,7 +2836,7 @@ async function doPokemonGacha(count) {
   for(let i=0; i<count; i++) {
     const chosen = pickFromPool(GACHA_POOL);
     const isShiny = Math.random() < 1/512;
-    const level = Math.max(1, Math.floor(gameState.wave * 0.3 + 2));
+    const level = Math.min(175, Math.max(1, Math.floor(gameState.wave * 0.3 + 2)));
     const pk = newPokemonEntry(chosen.id, chosen.name, chosen.types, level, isShiny);
     pk.stats = await fetchPokemonStats(chosen.id);
     pk.statsLoaded = true;
@@ -2601,15 +2875,24 @@ async function doEpicItemGacha(count) {
   updateResourceUI();
   const gotten = [];
   for(let i=0; i<count; i++) {
-    const isEpicRoll = Math.random() < 0.35;
+    const roll = Math.random();
     let item;
-    if(isEpicRoll) {
+    let wasEpic = false;
+    if(roll < 0.01) {
+      // 1% Max Candy
+      item = EPIC_ITEMS.find(e=>e.id==='max_candy');
+      wasEpic = true;
+    } else if(roll < 0.36) {
+      // ~35% epic roll
+      wasEpic = true;
       item = Math.random() < 0.60 ? EPIC_ITEMS.find(e=>e.id==='rare_candy') : EPIC_ITEMS[Math.floor(Math.random()*EPIC_ITEMS.length)];
+      // make sure we don't accidentally give max_candy via random index here
+      if(item.id === 'max_candy') item = EPIC_ITEMS.find(e=>e.id==='rare_candy');
     } else {
       item = ITEMS[Math.floor(Math.random()*ITEMS.length)];
     }
     gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
-    gotten.push({...item, wasEpic: isEpicRoll});
+    gotten.push({...item, wasEpic});
   }
   const unique = [...new Set(gotten.map(i=>i.name))];
   toast(`💠 Items: ${unique.join(', ')}!`, 4000);
@@ -2619,10 +2902,10 @@ async function doEpicItemGacha(count) {
     document.getElementById('modal-title').textContent = '💠 Items Received!';
     document.getElementById('modal-content').innerHTML = `
       <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px">
-        ${gotten.map(item=>`<div style="text-align:center;background:${item.wasEpic?'rgba(200,0,255,0.1)':'rgba(255,255,255,0.04)'};border:1px solid ${item.wasEpic?'#e040fb':'var(--border)'};border-radius:8px;padding:10px;width:90px">
+        ${gotten.map(item=>`<div style="text-align:center;background:${item.id==='max_candy'?'rgba(255,105,180,0.15)':item.wasEpic?'rgba(200,0,255,0.1)':'rgba(255,255,255,0.04)'};border:1px solid ${item.id==='max_candy'?'#ff69b4':item.wasEpic?'#e040fb':'var(--border)'};border-radius:8px;padding:10px;width:90px">
           <div style="font-size:36px">${item.emoji}</div>
-          <div style="font-family:'Press Start 2P';font-size:6px;color:${item.wasEpic?'#e040fb':'var(--gold)'};margin-top:4px">${item.name}</div>
-          ${item.wasEpic?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
+          <div style="font-family:'Press Start 2P';font-size:6px;color:${item.id==='max_candy'?'#ff69b4':item.wasEpic?'#e040fb':'var(--gold)'};margin-top:4px">${item.name}</div>
+          ${item.id==='max_candy'?'<div style="font-size:10px;color:#ff69b4">ULTRA RARE!</div>':item.wasEpic?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
         </div>`).join('')}
       </div>
       <button class="btn" onclick="closeModal()" style="width:100%;margin-top:12px">Nice haul!</button>
@@ -2637,7 +2920,7 @@ async function doShinyGacha() {
   gameState.gems -= cost;
   updateResourceUI();
   const chosen = pickFromPool(EPIC_GACHA_POOL);
-  const level = Math.max(1, Math.floor(gameState.wave * 0.3 + 5));
+  const level = Math.min(175, Math.max(1, Math.floor(gameState.wave * 0.3 + 5)));
   const pk = newPokemonEntry(chosen.id, chosen.name, chosen.types, level, true);
   pk.stats = await fetchPokemonStats(chosen.id);
   pk.statsLoaded = true;
@@ -2782,6 +3065,7 @@ function showPokemonModal(pk) {
         <div style="font-size:15px;color:var(--text2)">Level ${pk.level} / 250</div>
         <div style="font-size:15px;color:var(--text2)">HP: ${Math.max(0,pk.currentHp)} / ${maxHp}</div>
         <div style="font-size:14px;color:var(--text2)">EXP: ${pk.exp} / ${pk.expToNext}</div>
+        <div style="font-size:13px;color:var(--text2)">OT: <span style="color:var(--gold)">${pk.ot || 'Unknown'}</span></div>
         ${evo ? `<div style="font-size:13px;color:var(--accent);margin-top:4px">→ Evolves into ${evo.name} at Lv.${evo.level}</div>` : ''}
         ${equippedItem ? `<div style="margin-top:4px">Held: ${equippedItem.emoji} ${equippedItem.name}</div>` : ''}
       </div>
@@ -2791,6 +3075,7 @@ function showPokemonModal(pk) {
       ${!inTeam ? `<button class="btn gold" onclick="addToTeam(${pk.uid});closeModal()">Add to Team</button>` : `<button class="btn" onclick="removeFromTeamByUid(${pk.uid});closeModal()">Remove</button>`}
       <button class="btn" onclick="openEquipModal(${pk.uid})">Equip Item</button>
       ${equippedItem ? `<button class="btn" onclick="unequipItem(${pk.uid});closeModal()">Unequip</button>` : ''}
+      <button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="openTradeForPokemon(${pk.uid});closeModal()">🔄 Trade</button>
       <button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="confirmRelease(${pk.uid})">Release 🕊️</button>
     </div>
   `;
@@ -2870,27 +3155,33 @@ function renderMiniStats(pk) {
 }
 
 function showItemModal(item) {
-  if(item.effect === 'rare_candy') {
+  if(item.effect === 'rare_candy' || item.effect === 'max_candy') {
+    const isMax = item.effect === 'max_candy';
+    const capLevel = isMax ? 250 : 175;
     const count = gameState.inventory[item.id] || 0;
-    document.getElementById('modal-title').textContent = `🍬 Rare Candy — Pick Pokémon`;
+    document.getElementById('modal-title').textContent = isMax ? `🍭 Max Candy — Pick Pokémon` : `🍬 Rare Candy — Pick Pokémon`;
     document.getElementById('modal-content').innerHTML = `
-      <div style="font-size:14px;color:var(--text2);margin-bottom:6px">${item.desc}</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:4px">${item.desc}</div>
+      ${!isMax ? `<div style="font-size:13px;color:#ff9e40;margin-bottom:6px">⚠️ Only works up to <b style="color:#ffd700">Lv.175</b>! Use Max Candy 🍭 for higher levels.</div>` : `<div style="font-size:13px;color:#69f0ae;margin-bottom:6px">✅ Works on any Pokémon up to Lv.250!</div>`}
       <div style="font-size:14px;margin-bottom:8px">In Bag: <span style="color:var(--gold)">×${count}</span></div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:8px 12px">
-        <div style="font-size:13px;color:var(--text2)">Candies:</div>
-        <button onclick="adjustCandyAmt(-1)" style="background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:18px">-</button>
+        <div style="font-size:13px;color:var(--text2)">Amount:</div>
+        <button onclick="adjustCandyAmt(-1,'${item.id}')" style="background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:18px">-</button>
         <span id="candy-amount" style="font-family:'Press Start 2P';font-size:11px;color:var(--gold);min-width:30px;text-align:center">1</span>
-        <button onclick="adjustCandyAmt(1)" style="background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:18px">+</button>
-        <button onclick="adjustCandyAmt(10)" style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.4);color:var(--gold);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:14px">+10</button>
-        <button onclick="setCandyAmtMax()" style="background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.4);color:#ff9e40;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:14px">MAX</button>
+        <button onclick="adjustCandyAmt(1,'${item.id}')" style="background:rgba(255,255,255,0.08);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:18px">+</button>
+        <button onclick="adjustCandyAmt(10,'${item.id}')" style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.4);color:var(--gold);padding:3px 8px;border-radius:6px;cursor:pointer;font-size:14px">+10</button>
+        <button onclick="setCandyAmtMax('${item.id}')" style="background:rgba(255,165,0,0.1);border:1px solid rgba(255,165,0,0.4);color:#ff9e40;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:14px">MAX</button>
       </div>
-      <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:8px">GIVE TO:</div>
+      <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:8px">GIVE TO ${isMax ? '' : '(Lv.≤175 only)'}:</div>
       <div class="poke-box">
-        ${gameState.box.map(p=>`<div class="poke-card" onclick="useRareCandyMulti(${p.uid})" style="cursor:pointer">
-          <img src="${getSpriteUrl(p.id,p.isShiny)}" width="52" height="52">
-          <span class="cname">${p.name}</span>
-          <span class="clevel">Lv.${p.level}</span>
-        </div>`).join('')}
+        ${gameState.box.map(p=>{
+          const blocked = !isMax && p.level >= 175;
+          return `<div class="poke-card${blocked?' ':''}${p.isShiny&&!blocked?' shiny-card':''}" onclick="${blocked?'toast(\'Rare Candy only works up to Lv.175! Use Max Candy.\')':'useRareCandyMulti('+p.uid+',\''+item.id+'\')'}" style="cursor:pointer;${blocked?'opacity:0.4;':''}">
+            <img src="${getSpriteUrl(p.id,p.isShiny)}" width="52" height="52">
+            <span class="cname">${p.name}</span>
+            <span class="clevel">Lv.${p.level}${blocked?' 🚫':''}</span>
+          </div>`;
+        }).join('')}
       </div>
     `;
     openModal();
@@ -2972,35 +3263,48 @@ function confirmPullToLevel(uid) {
 }
 
 let _candyAmount = 1;
+let _candyItemId = 'rare_candy';
 
-function adjustCandyAmt(delta) {
-  const count = gameState.inventory['rare_candy'] || 0;
+function adjustCandyAmt(delta, itemId) {
+  if(itemId) _candyItemId = itemId;
+  const count = gameState.inventory[_candyItemId] || 0;
   _candyAmount = Math.max(1, Math.min(count, _candyAmount + delta));
   const el = document.getElementById('candy-amount');
   if(el) el.textContent = _candyAmount;
 }
 
-function setCandyAmtMax() {
-  _candyAmount = Math.max(1, gameState.inventory['rare_candy'] || 0);
+function setCandyAmtMax(itemId) {
+  if(itemId) _candyItemId = itemId;
+  _candyAmount = Math.max(1, gameState.inventory[_candyItemId] || 0);
   const el = document.getElementById('candy-amount');
   if(el) el.textContent = _candyAmount;
 }
 
-function useRareCandyMulti(uid) {
-  const available = gameState.inventory['rare_candy'] || 0;
-  if(available <= 0) { toast('No Rare Candy left!'); return; }
+function useRareCandyMulti(uid, itemId) {
+  const id = itemId || _candyItemId || 'rare_candy';
+  const isMax = id === 'max_candy';
+  const capLevel = isMax ? 250 : 175;
+  const available = gameState.inventory[id] || 0;
+  if(available <= 0) { toast(`No ${isMax ? 'Max Candy' : 'Rare Candy'} left!`); return; }
   const pk = gameState.box.find(p=>p.uid===uid);
   if(!pk) return;
   if(pk.level >= 250) { toast(`${pk.name} is already at max level!`); return; }
-  const amount = Math.min(_candyAmount, available, 250 - pk.level);
-  gameState.inventory['rare_candy'] -= amount;
+  if(!isMax && pk.level >= 175) {
+    toast(`🚫 Rare Candy only works up to Lv.175! Use Max Candy 🍭 instead.`, 3500);
+    return;
+  }
+  const maxUsable = Math.min(capLevel, 250) - pk.level;
+  const amount = Math.min(_candyAmount, available, maxUsable);
+  if(amount <= 0) { toast(`${pk.name} is already at the cap for this candy!`); return; }
+  gameState.inventory[id] -= amount;
   const oldLevel = pk.level;
-  pk.level = Math.min(250, pk.level + amount);
+  pk.level = Math.min(capLevel, pk.level + amount);
   pk.expToNext = calcExpToNext(pk.level);
   pk.exp = 0;
   if(pk.stats) pk.currentHp = getMaxHp(pk);
-  addLog(`🍬 ×${amount} Rare Candy! ${pk.name} Lv.${oldLevel} → Lv.${pk.level}!`, 'log-evolve');
-  toast(`🍬 ${pk.name} → Lv.${pk.level}! (×${amount} candy)`, 3000);
+  const emoji = isMax ? '🍭' : '🍬';
+  addLog(`${emoji} ×${amount} ${isMax?'Max':'Rare'} Candy! ${pk.name} Lv.${oldLevel} → Lv.${pk.level}!`, 'log-evolve');
+  toast(`${emoji} ${pk.name} → Lv.${pk.level}! (×${amount} candy)`, 3000);
   checkEvolution(pk);
   _candyAmount = 1;
   closeModal();
@@ -3252,11 +3556,11 @@ function saveGame() {
       gold: gameState.gold, gems: gameState.gems, wins: gameState.wins, wave: gameState.wave,
       inventory: gameState.inventory, equippedItems: gameState.equippedItems,
       dailyClaimed: gameState.dailyClaimed, lastDaily: gameState.lastDaily,
-      road: gameState.road, pUid,
+      road: gameState.road, pUid, trainerName: gameState.trainerName,
       box: gameState.box.map(p=>({
         uid:p.uid, id:p.id, name:p.name, types:p.types, level:p.level,
         isShiny:p.isShiny, currentHp:p.currentHp, exp:p.exp, expToNext:p.expToNext,
-        stats:p.stats, statsLoaded:p.statsLoaded, ivs:p.ivs
+        stats:p.stats, statsLoaded:p.statsLoaded, ivs:p.ivs, ot:p.ot
       })),
       teamUids: gameState.team.map(p=>p.uid),
       currentFighterIdx: gameState.currentFighterIdx,
@@ -3281,7 +3585,8 @@ function loadGame() {
     gameState.road = save.road || {active:false,floor:0,winsOnFloor:0,winsNeeded:20,mode:null,farmRegionIdx:0};
     if(!gameState.road.mode) gameState.road.mode = gameState.road.active ? 'floor' : null;
     pUid = save.pUid || 0;
-    gameState.box = (save.box || []).map(p => ({ ...p, statsLoaded: !!p.stats, ivs: p.ivs || generateIVs() }));
+    gameState.trainerName = save.trainerName || 'Trainer';
+    gameState.box = (save.box || []).map(p => ({ ...p, statsLoaded: !!p.stats, ivs: p.ivs || generateIVs(), ot: p.ot || save.trainerName || 'Trainer' }));
     gameState.team = (save.teamUids || []).map(uid => gameState.box.find(p=>p.uid===uid)).filter(Boolean);
     gameState.currentFighterIdx = Math.min(save.currentFighterIdx||0, Math.max(0,gameState.team.length-1));
     return gameState.box.length > 0;
@@ -3425,6 +3730,11 @@ function renderRoadUI() {
         <div class="road-floor-title" style="color:#ff9e40">🐉 TITAN RAYQUAZA Lv.270</div>
         <div class="road-floor-reward" style="color:#ffd700">Capture it! · Shiny 1/25 · Cost: 💎150</div>
         <button class="btn" style="border-color:#ff6d00;color:#ff9e40;width:100%;margin-top:8px" onclick="startEventBoss()">⚔️ CHALLENGE THE TITAN</button>
+      </div>
+      <div class="road-floor-card" style="border-color:#9c27b0;background:linear-gradient(135deg,rgba(50,0,80,0.8),rgba(20,0,40,0.6))">
+        <div class="road-floor-title" style="color:#ce93d8">👻 GIRATINA Lv.270</div>
+        <div class="road-floor-reward" style="color:#ba68c8">The Renegade Pokémon · Shiny 1/20 · Cost: 💎250</div>
+        <button class="btn" style="border-color:#9c27b0;color:#ce93d8;width:100%;margin-top:8px" onclick="startGiratinaBoss()">⚔️ ENTER THE DISTORTION WORLD</button>
       </div>`;
   }
 
@@ -3675,6 +3985,548 @@ function debugApplyStats() {
   renderAll();
   loadDebugStatRows(fighter);
   toast('✅ IV changes applied!', 2000);
+}
+
+// ============================================================
+// MULTI-SAVE SYSTEM
+// ============================================================
+
+const MULTI_SAVE_KEY = 'pkm_idle_saves';
+const MAX_SAVES = 5;
+
+function getAllSaves() {
+  try { return JSON.parse(localStorage.getItem(MULTI_SAVE_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function setAllSaves(saves) {
+  localStorage.setItem(MULTI_SAVE_KEY, JSON.stringify(saves));
+}
+
+function buildSaveData(slotName) {
+  return {
+    name: slotName,
+    savedAt: Date.now(),
+    gold: gameState.gold, gems: gameState.gems, wins: gameState.wins, wave: gameState.wave,
+    inventory: gameState.inventory, equippedItems: gameState.equippedItems,
+    dailyClaimed: gameState.dailyClaimed, lastDaily: gameState.lastDaily,
+    road: gameState.road, pUid, trainerName: gameState.trainerName,
+    box: gameState.box.map(p=>({
+      uid:p.uid, id:p.id, name:p.name, types:p.types, level:p.level,
+      isShiny:p.isShiny, currentHp:p.currentHp, exp:p.exp, expToNext:p.expToNext,
+      stats:p.stats, statsLoaded:p.statsLoaded, ivs:p.ivs, ot:p.ot
+    })),
+    teamUids: gameState.team.map(p=>p.uid),
+    currentFighterIdx: gameState.currentFighterIdx,
+  };
+}
+
+function openSavesOverlay() {
+  renderSaveSlots();
+  document.getElementById('saves-overlay').classList.add('active');
+}
+
+function closeSavesOverlay() {
+  document.getElementById('saves-overlay').classList.remove('active');
+}
+
+function renderSaveSlots() {
+  const saves = getAllSaves();
+  const list = document.getElementById('saves-list');
+  let html = '';
+
+  // Header with trainer name + new game button
+  html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:6px">
+    <div style="font-size:13px;color:var(--text2)">
+      Trainer: <span style="color:var(--gold)">${gameState.trainerName}</span>
+      <button onclick="changeTrainerName()" style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--text2);padding:2px 8px;border-radius:4px;cursor:pointer;margin-left:6px;font-family:'VT323',monospace;font-size:14px">✏️ Rename</button>
+    </div>
+    <button onclick="startFreshGame()" style="background:linear-gradient(135deg,rgba(239,83,80,0.2),rgba(239,83,80,0.05));border:1px solid #ef5350;color:#ef5350;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px;letter-spacing:1px">🌱 NEW GAME</button>
+  </div>`;
+
+  for(let i = 0; i < MAX_SAVES; i++) {
+    const s = saves[i];
+    if(s) {
+      const date = new Date(s.savedAt);
+      const dateStr = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+      const teamUids = s.teamUids || [];
+      const teamPokemon = teamUids.map(uid => (s.box||[]).find(p=>p.uid===uid)).filter(Boolean);
+      const teamImgs = teamPokemon.map(p => 
+        `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p.isShiny?'shiny/':''}${p.id}.png" title="${p.name} Lv.${p.level}${p.isShiny?' ★':''}">`
+      ).join('');
+      html += `<div class="save-slot-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${s.name}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:3px">OT: ${s.trainerName||'Trainer'} · Avg Lv.${s.box?Math.round(s.box.reduce((a,p)=>a+p.level,0)/Math.max(1,s.box.length)):1}</div>
+            <div style="font-size:12px;color:var(--text2)">💰${formatNum(s.gold||0)} · 💎${s.gems||0} · 🏆${s.wins||0} · ${s.box?s.box.length:0} Pokémon</div>
+            <div style="font-size:11px;color:#555">${dateStr}</div>
+            <div class="save-mini-team">${teamImgs}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button onclick="loadSaveSlot(${i})" style="background:rgba(79,195,247,0.15);border:1px solid var(--accent);color:var(--accent);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px">📂 Load</button>
+            <button onclick="overwriteSaveSlot(${i})" style="background:rgba(102,187,106,0.15);border:1px solid var(--green);color:var(--green);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px">💾 Save</button>
+            <button onclick="deleteSaveSlot(${i})" style="background:rgba(239,83,80,0.1);border:1px solid var(--red);color:var(--red);padding:4px 10px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px">🗑 Del</button>
+          </div>
+        </div>
+      </div>`;
+    } else {
+      html += `<div class="save-slot-card empty">
+        <div style="text-align:center;padding:6px 0 2px;font-size:13px;color:var(--text2);margin-bottom:8px">Empty Slot ${i+1}</div>
+        <div style="display:flex;gap:6px;justify-content:center">
+          <button onclick="createNewSave(${i})" style="background:rgba(102,187,106,0.12);border:1px solid var(--green);color:var(--green);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px;flex:1">💾 Save Current</button>
+          <button onclick="saveAndStartFresh(${i})" style="background:rgba(239,83,80,0.1);border:1px solid #ef5350;color:#ef5350;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:15px;flex:1">🌱 New Game Here</button>
+        </div>
+      </div>`;
+    }
+  }
+  list.innerHTML = html;
+}
+
+function createNewSave(slotIdx) {
+  const name = prompt('Name this save:', `Save ${slotIdx+1}`);
+  if(!name) return;
+  const saves = getAllSaves();
+  saves[slotIdx] = buildSaveData(name.trim() || `Save ${slotIdx+1}`);
+  setAllSaves(saves);
+  toast(`💾 Saved to slot: ${saves[slotIdx].name}`, 2500);
+  renderSaveSlots();
+}
+
+function overwriteSaveSlot(slotIdx) {
+  const saves = getAllSaves();
+  const existing = saves[slotIdx];
+  saves[slotIdx] = buildSaveData(existing ? existing.name : `Save ${slotIdx+1}`);
+  setAllSaves(saves);
+  toast(`💾 Slot overwritten!`, 2000);
+  renderSaveSlots();
+}
+
+function loadSaveSlot(slotIdx) {
+  const saves = getAllSaves();
+  const s = saves[slotIdx];
+  if(!s) return;
+  if(!confirm(`Load "${s.name}"? Current progress may be lost if unsaved.`)) return;
+  try {
+    // Stop all active battles first
+    if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
+    bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false;
+    currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null;
+    battlePaused = false;
+    playerAttackCooldown = 0; enemyAttackCooldown = 0;
+    document.getElementById('arena').classList.remove('road-mode');
+    document.getElementById('arena').style.background = '';
+
+    // Load all state
+    gameState.gold = s.gold || 500;
+    gameState.gems = s.gems || 15;
+    gameState.wins = s.wins || 0;
+    gameState.wave = s.wave || 1;
+    gameState.inventory = s.inventory || {};
+    gameState.equippedItems = s.equippedItems || {};
+    gameState.dailyClaimed = s.dailyClaimed || false;
+    gameState.lastDaily = s.lastDaily || 0;
+    gameState.road = s.road || {active:false,floor:0,winsOnFloor:0,winsNeeded:20,mode:null,farmRegionIdx:0};
+    if(!gameState.road.mode) gameState.road.mode = gameState.road.active ? 'floor' : null;
+    gameState.trainerName = s.trainerName || 'Trainer';
+    pUid = s.pUid || 0;
+    gameState.box = (s.box || []).map(p => ({ ...p, statsLoaded: !!p.stats, ivs: p.ivs || generateIVs(), ot: p.ot || s.trainerName || 'Trainer' }));
+    gameState.team = (s.teamUids || []).map(uid => gameState.box.find(p=>p.uid===uid)).filter(Boolean);
+    gameState.currentFighterIdx = Math.min(s.currentFighterIdx||0, Math.max(0,gameState.team.length-1));
+
+    // Restore road mode visuals
+    if(gameState.road.active) document.getElementById('arena').classList.add('road-mode');
+
+    closeSavesOverlay();
+    renderAll();
+
+    // Restart battle with correct state
+    if(gameState.road.active) {
+      if(gameState.road.mode === 'farm') spawnFarmEnemy();
+      else spawnRoadEnemy();
+    } else {
+      spawnEnemy();
+    }
+    startBattle();
+
+    toast(`✅ Loaded: ${s.name} (Wave ${gameState.wave})`, 3000);
+  } catch(e) { console.warn(e); toast('❌ Failed to load save!', 3000); }
+}
+
+function deleteSaveSlot(slotIdx) {
+  if(!confirm('Delete this save slot?')) return;
+  const saves = getAllSaves();
+  saves[slotIdx] = undefined;
+  setAllSaves(saves.map(s=>s));
+  renderSaveSlots();
+  toast('🗑 Save deleted.', 2000);
+}
+
+function changeTrainerName() {
+  const name = prompt('Enter trainer name:', gameState.trainerName);
+  if(!name || !name.trim()) return;
+  gameState.trainerName = name.trim().substring(0, 12);
+  toast(`✏️ Trainer name: ${gameState.trainerName}`, 2000);
+  renderSaveSlots();
+}
+
+function startFreshGame() {
+  if(!confirm('Start a brand new game? Your current unsaved progress will be lost!\n\nTip: Save first using one of the slots before starting fresh.')) return;
+  closeSavesOverlay();
+  _resetGameState('Trainer');
+}
+
+function saveAndStartFresh(slotIdx) {
+  const name = prompt('Enter trainer name for new game:', `Trainer`);
+  if(name === null) return; // cancelled
+  if(!confirm('Start a new game in this slot? Your current unsaved progress will be lost!')) return;
+  closeSavesOverlay();
+  _resetGameState(name.trim().substring(0, 12) || 'Trainer');
+}
+
+function _resetGameState(trainerName) {
+  // Stop battle
+  if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
+  bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false;
+  currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null;
+  battlePaused = false; pUid = 0;
+  playerAttackCooldown = 0; enemyAttackCooldown = 0;
+
+  // Reset state (don't touch localStorage — keep existing saves intact)
+  gameState.gold = 500; gameState.gems = 15; gameState.wins = 0; gameState.wave = 1;
+  gameState.autoBattle = true; gameState.team = []; gameState.box = [];
+  gameState.inventory = {}; gameState.equippedItems = {};
+  gameState.currentFighterIdx = 0; gameState.dailyClaimed = false; gameState.lastDaily = 0;
+  gameState.road = { active: false, floor: 0, winsOnFloor: 0, winsNeeded: 30, mode: null, farmRegionIdx: 0 };
+  gameState.trainerName = trainerName;
+
+  // Reset arena
+  document.getElementById('arena').classList.remove('road-mode');
+  document.getElementById('arena').style.background = '';
+
+  // Hide game, show starter screen
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('starter-screen').style.display = 'flex';
+  showStarterPicker();
+
+  toast(`🌱 New game! Welcome, ${trainerName}! Choose your starter!`, 4000);
+}
+
+// ============================================================
+// GOLD SHINY PULL
+// ============================================================
+
+async function doGoldShinyPull() {
+  const cost = 10000000;
+  if(gameState.gold < cost) {
+    toast(`Need 10,000,000 💰 Gold! (have ${formatNum(gameState.gold)})`, 3000);
+    return;
+  }
+  gameState.gold -= cost;
+  updateResourceUI();
+  const chosen = pickFromPool(EPIC_GACHA_POOL);
+  const level = Math.min(175, Math.max(1, Math.floor(gameState.wave * 0.3 + 5)));
+  const pk = newPokemonEntry(chosen.id, chosen.name, chosen.types, level, true);
+  pk.stats = await fetchPokemonStats(chosen.id);
+  pk.statsLoaded = true;
+  pk.currentHp = getMaxHp(pk);
+  gameState.box.push(pk);
+  if(isCosmic(pk)) checkAndAnnounceCosmic(pk);
+  else { addLog(`💰 Gold Shiny! ✨ ${pk.name} obtained!`, 'log-shiny'); toast(`💰✨ GOLD SHINY: ${pk.name}!`, 4000); }
+  renderAll();
+  showGachaResult(pk);
+}
+
+// ============================================================
+// TRADING SYSTEM
+// ============================================================
+
+function encodePokemonTrade(pk) {
+  const data = {
+    uid: pk.uid, id: pk.id, name: pk.name, types: pk.types, level: pk.level,
+    isShiny: pk.isShiny, exp: pk.exp, expToNext: pk.expToNext,
+    stats: pk.stats, statsLoaded: pk.statsLoaded, ivs: pk.ivs,
+    ot: pk.ot || gameState.trainerName, currentHp: pk.currentHp,
+  };
+  return btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+}
+
+function decodePokemonTrade(code) {
+  try {
+    const data = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+    if(!data.id || !data.name) throw new Error('Invalid');
+    return data;
+  } catch(e) { return null; }
+}
+
+function openTradeOverlay() {
+  document.getElementById('trade-content').innerHTML = renderTradeMenu();
+  document.getElementById('trade-overlay').classList.add('active');
+}
+
+function closeTradeOverlay() {
+  document.getElementById('trade-overlay').classList.remove('active');
+}
+
+function renderTradeMenu() {
+  return `
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showTradePickPokemon()">📤 Send Trade</button>
+      <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showTradeReceive()">📥 Receive Trade</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);text-align:center">Share a Trade Code with another player!<br>Use base64 codes to transfer Pokémon.</div>
+  `;
+}
+
+function openTradeForPokemon(uid) {
+  const pk = gameState.box.find(p=>p.uid===uid);
+  if(!pk) return;
+  openTradeOverlay();
+  showTradeCode(pk);
+}
+
+function showTradePickPokemon() {
+  const sorted = [...gameState.box];
+  let html = `<div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:10px">PICK POKÉMON TO TRADE</div>
+    <div class="poke-box" style="max-height:340px;overflow-y:auto">`;
+  sorted.forEach(p => {
+    const cosmic = isCosmic(p);
+    html += `<div class="poke-card${cosmic?' cosmic-card':p.isShiny?' shiny-card':''}" onclick="showTradeCode_uid(${p.uid})" style="cursor:pointer">
+      ${p.isShiny ? '<div style="position:absolute;top:3px;right:4px;font-size:14px">★</div>' : ''}
+      <img src="${getSpriteUrl(p.id, p.isShiny)}" onerror="this.src='${getBattleSprite(p.id,p.isShiny)}'">
+      <span class="cname">${p.name}</span>
+      <span class="clevel">Lv.${p.level}</span>
+    </div>`;
+  });
+  html += `</div>`;
+  document.getElementById('trade-content').innerHTML = html;
+}
+
+function showTradeCode_uid(uid) {
+  const pk = gameState.box.find(p=>p.uid===uid);
+  if(pk) showTradeCode(pk);
+}
+
+function showTradeCode(pk) {
+  const code = encodePokemonTrade(pk);
+  const cosmic = isCosmic(pk);
+  document.getElementById('trade-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="${getSpriteUrl(pk.id,pk.isShiny)}" width="72" height="72" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}" onerror="this.src='${getBattleSprite(pk.id,pk.isShiny)}'">
+      <div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${cosmic?'🌌 COSMIC ':''}${pk.isShiny?'✨ ':''}${pk.name}</div>
+        <div style="font-size:14px;color:var(--text2)">Lv.${pk.level} · OT: ${pk.ot||'Trainer'}</div>
+        <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:4px">📤 Trade Code (share this with the recipient):</div>
+    <div class="trade-code-display" id="trade-code-val">${code}</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae" onclick="copyTradeCode()">📋 Copy Code</button>
+      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350" onclick="confirmSendTrade(${pk.uid})">✅ Confirm Send</button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-top:8px;text-align:center">⚠️ Clicking "Confirm Send" removes the Pokémon from your box!</div>
+  `;
+}
+
+function copyTradeCode() {
+  const el = document.getElementById('trade-code-val');
+  if(!el) return;
+  try {
+    navigator.clipboard.writeText(el.textContent).then(()=>toast('📋 Code copied!', 2000)).catch(()=>{
+      const ta = document.createElement('textarea');
+      ta.value = el.textContent;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('📋 Code copied!', 2000);
+    });
+  } catch(e) { toast('Copy manually from the box above.', 3000); }
+}
+
+function confirmSendTrade(uid) {
+  const pk = gameState.box.find(p=>p.uid===uid);
+  if(!pk) { toast('Pokémon not found!', 2000); return; }
+  if(gameState.box.length <= 1) { toast("Can't trade your last Pokémon!", 2000); return; }
+  if(!confirm(`Remove ${pk.name} from your box to complete the trade?`)) return;
+
+  // Remove from box and team
+  const teamIdx = gameState.team.indexOf(pk);
+  if(teamIdx >= 0) {
+    if(gameState.team.length <= 1) { toast("Can't trade your last team member!", 2000); return; }
+    gameState.team.splice(teamIdx, 1);
+    if(gameState.currentFighterIdx >= gameState.team.length) gameState.currentFighterIdx = 0;
+  }
+  const boxIdx = gameState.box.indexOf(pk);
+  if(boxIdx >= 0) gameState.box.splice(boxIdx, 1);
+
+  toast(`📤 ${pk.name} sent! Give the code to your trade partner.`, 4000);
+  renderAll();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:20px">
+      <div style="font-size:40px;margin-bottom:10px">✅</div>
+      <div style="font-size:16px;color:#69f0ae">${pk.name} sent successfully!</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">Share the trade code with your partner so they can receive it.</div>
+    </div>`;
+}
+
+function showTradeReceive() {
+  document.getElementById('trade-content').innerHTML = `
+    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:10px">📥 RECEIVE POKÉMON</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Paste the trade code from your partner:</div>
+    <textarea id="trade-receive-input" placeholder="Paste trade code here..."></textarea>
+    <button class="btn" style="width:100%;border-color:#4fc3f7;color:var(--accent);font-size:18px" onclick="processTradeReceive()">📥 Receive Pokémon!</button>
+  `;
+}
+
+async function processTradeReceive() {
+  const code = document.getElementById('trade-receive-input')?.value?.trim();
+  if(!code) { toast('Paste a trade code first!', 2000); return; }
+  const data = decodePokemonTrade(code);
+  if(!data) { toast('❌ Invalid trade code!', 3000); return; }
+  
+  // Give new UID and mark OT
+  const pk = {
+    ...data,
+    uid: ++pUid,
+    ot: data.ot || 'Unknown',
+    statsLoaded: !!data.stats,
+    ivs: data.ivs || generateIVs(),
+  };
+  if(!pk.stats && pk.id) {
+    pk.stats = await fetchPokemonStats(pk.id);
+    pk.statsLoaded = true;
+  }
+  if(!pk.currentHp && pk.stats) pk.currentHp = getMaxHp(pk);
+
+  gameState.box.push(pk);
+  checkAndAnnounceCosmic(pk);
+  renderAll();
+  const cosmic = isCosmic(pk);
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:16px">
+      <img src="${getSpriteUrl(pk.id, pk.isShiny)}" width="90" height="90" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
+      <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:10px">${cosmic?'🌌 COSMIC ':pk.isShiny?'✨ ':''}${pk.name} received!</div>
+      <div style="font-size:14px;color:var(--text2);margin-top:6px">Lv.${pk.level} · OT: ${pk.ot}</div>
+      <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+    </div>`;
+  toast(`📥 ${pk.name} received from ${pk.ot}!`, 4000);
+}
+
+// ============================================================
+// GIRATINA BOSS
+// ============================================================
+
+let giratinaBattleActive = false;
+let giratinaEnemy = null;
+
+async function startGiratinaBoss() {
+  if(gameState.gems < 250) { toast('Need 250 💎 Gems to challenge Giratina!'); return; }
+  if(gameState.team.length === 0) { toast('You need a team!'); return; }
+  battlePaused = true;
+  document.getElementById('auto-btn').textContent = '▶ RESUME';
+  document.getElementById('modal-title').textContent = '👻 GIRATINA Lv.270';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/487.png" width="140" height="140" style="image-rendering:pixelated;filter:drop-shadow(0 0 24px rgba(150,0,255,0.8))">
+      <div style="margin:10px 0;font-family:'Press Start 2P';font-size:8px;color:#ce93d8">THE RENEGADE POKÉMON</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:12px">
+        A fearsome dragon from the Distortion World.<br>Stronger than Rayquaza in every way.<br><br>
+        <span style="color:#ffd700">Drop: Giratina (1/20 shiny!)</span><br>
+        <span style="color:#ce93d8">Stats: 1.4× Rayquaza's power</span><br>
+        <span style="color:var(--text2)">Cost: 250 💎</span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn" style="border-color:#9c27b0;color:#ce93d8" onclick="confirmGiratinaBoss()">⚔️ Fight! (250💎)</button>
+        <button class="btn gold" onclick="closeModal()">Back</button>
+      </div>
+    </div>
+  `;
+  openModal();
+}
+
+async function confirmGiratinaBoss() {
+  if(gameState.gems < 250) { toast('Not enough Gems!'); closeModal(); return; }
+  gameState.gems -= 250;
+  updateResourceUI();
+  closeModal();
+  battlePaused = true;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  currentEnemy = null;
+  const savedRoad = { ...gameState.road };
+  gameState.road.active = false;
+  document.getElementById('arena').classList.remove('road-mode');
+
+  // Giratina is Pokemon #487 (Origin Forme)
+  const giratinaStats = await fetchPokemonStats(487);
+  // Scale stats 1.4x vs Rayquaza: we'll use level 378 = 270 * 1.4
+  giratinaEnemy = newPokemonEntry(487, 'Giratina', ['ghost','dragon'], 270, false);
+  giratinaEnemy.stats = giratinaStats;
+  giratinaEnemy.statsLoaded = true;
+  giratinaEnemy._bossHpMax = 32000;
+  giratinaEnemy.currentHp = giratinaEnemy._bossHpMax;
+  giratinaEnemy.isBoss = true;
+  giratinaEnemy._isGiratina = true;
+  giratinaEnemy._savedRoad = savedRoad;
+  giratinaEnemy._attackMult = 0.8;
+  currentEnemy = giratinaEnemy;
+  giratinaBattleActive = true;
+  bossBattleActive = true;
+  gameState.team.forEach(p => { if(p.statsLoaded) p.currentHp = getMaxHp(p); });
+  document.getElementById('arena').style.background = 'radial-gradient(ellipse at 50% 0%, rgba(130,0,200,0.4) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(50,0,100,0.5) 0%, transparent 50%), linear-gradient(180deg, #05000a 0%, #100020 40%, #080015 100%)';
+  addLog('👻 GIRATINA emerged from the Distortion World!', 'log-cosmic');
+  toast('👻 BOSS FIGHT: Giratina Lv.378! The Renegade awakens!', 4000);
+  battlePaused = false;
+  updateEnemyUI();
+}
+
+function handleGiratinaDefeated(player) {
+  const savedRoad = giratinaEnemy?._savedRoad;
+  giratinaBattleActive = false;
+  bossBattleActive = false;
+  currentEnemy = null;
+  giratinaEnemy = null;
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) { gameState.road = savedRoad; document.getElementById('arena').classList.add('road-mode'); }
+  addLog('🎉 GIRATINA DEFEATED! You captured it!', 'log-cosmic');
+  toast('🏆 GIRATINA CAPTURED!', 5000);
+  const isShiny = Math.random() < 1/20;
+  const gt = newPokemonEntry(487, 'Giratina', ['ghost','dragon'], 270, isShiny);
+  gt.ivs = generateHighIVs();
+  fetchPokemonStats(487).then(stats => {
+    gt.stats = stats;
+    gt.statsLoaded = true;
+    gt.currentHp = getMaxHp(gt);
+    gameState.box.push(gt);
+    checkAndAnnounceCosmic(gt);
+    renderAll();
+    showGachaResult(gt);
+  });
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  const nextSpawn = (savedRoad && savedRoad.active) ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
+  setTimeout(nextSpawn, 2000);
+}
+
+function handleGiratinaFailed() {
+  const savedRoad = giratinaEnemy?._savedRoad;
+  giratinaBattleActive = false;
+  bossBattleActive = false;
+  currentEnemy = null;
+  giratinaEnemy = null;
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) { gameState.road = savedRoad; document.getElementById('arena').classList.add('road-mode'); }
+  addLog('💀 GIRATINA DEVOURED YOUR TEAM and returned to the Distortion World!', 'log-dmg');
+  toast('💀 Giratina destroyed your team!', 5000);
+  gameState.team.forEach(p => { p.currentHp = Math.max(1, Math.floor(getMaxHp(p)*0.20)); });
+  gameState.currentFighterIdx = 0;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  renderAll();
+  const nextSpawn = (savedRoad && savedRoad.active) ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
+  setTimeout(nextSpawn, 2500);
 }
 
 initStarterScreen();
