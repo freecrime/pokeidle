@@ -275,6 +275,19 @@ body::before {
   100% { filter: brightness(1); transform: translateX(0); }
 }
 
+/* Shiny hurt preserves glow */
+.fighter-sprite.shiny-sprite.hurt-anim {
+  animation: hurt-shiny 0.45s ease-out;
+}
+@keyframes hurt-shiny {
+  0%   { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: translateX(0); }
+  15%  { filter: brightness(4) sepia(1) hue-rotate(300deg); transform: translateX(-12px); }
+  30%  { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: translateX(10px); }
+  50%  { filter: brightness(3) sepia(1) hue-rotate(300deg); transform: translateX(-8px); }
+  70%  { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: translateX(6px); }
+  100% { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: translateX(0); }
+}
+
 /* Player hurt needs to preserve the flip */
 #player-area .fighter-sprite.hurt-anim {
   animation: hurt-player 0.45s ease-out;
@@ -286,6 +299,19 @@ body::before {
   50%  { filter: brightness(3) sepia(1) hue-rotate(300deg); transform: scaleX(-1) translateX(-8px); }
   70%  { filter: brightness(1); transform: scaleX(-1) translateX(6px); }
   100% { filter: brightness(1); transform: scaleX(-1) translateX(0); }
+}
+
+/* Player shiny hurt preserves glow + flip */
+#player-area .fighter-sprite.shiny-sprite.hurt-anim {
+  animation: hurt-player-shiny 0.45s ease-out;
+}
+@keyframes hurt-player-shiny {
+  0%   { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: scaleX(-1) translateX(0); }
+  15%  { filter: brightness(4) sepia(1) hue-rotate(300deg); transform: scaleX(-1) translateX(-12px); }
+  30%  { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: scaleX(-1) translateX(10px); }
+  50%  { filter: brightness(3) sepia(1) hue-rotate(300deg); transform: scaleX(-1) translateX(-8px); }
+  70%  { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: scaleX(-1) translateX(6px); }
+  100% { filter: drop-shadow(0 0 8px rgba(255,215,0,0.8)) drop-shadow(0 0 16px rgba(255,100,200,0.6)); transform: scaleX(-1) translateX(0); }
 }
 
 .shiny-sprite {
@@ -747,6 +773,20 @@ body::before {
   to { background-position: 200% center; }
 }
 
+.ss-rainbow {
+  font-family: 'Press Start 2P', monospace;
+  background: linear-gradient(90deg, #ff69b4, #ffd700, #4fc3f7, #ab47bc, #ff69b4);
+  background-size: 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 2s linear infinite;
+  text-shadow: none;
+  display: inline-block;
+  line-height: 1.4;
+  padding-top: 2px;
+}
+
 /* Stats display */
 .stat-row {
   display: flex;
@@ -925,8 +965,78 @@ body::before {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Diamond Road */
-#road-ui {
+/* Victory Road section */
+.victory-road-card {
+  background: linear-gradient(135deg, rgba(80,40,0,0.7), rgba(40,20,0,0.5));
+  border: 1px solid #8b6914;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.victory-road-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,200,50,0.1), transparent 70%);
+  pointer-events: none;
+}
+.victory-road-card:hover {
+  border-color: #ffd700;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(255,180,0,0.3);
+}
+.vr-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #ffd700;
+  margin-bottom: 4px;
+}
+.vr-subtitle {
+  font-size: 12px;
+  color: #ffb74d;
+  margin-bottom: 3px;
+}
+.vr-reward {
+  font-size: 12px;
+  color: #a5d6a7;
+}
+
+/* Capture overlay */
+#capture-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 600;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#capture-overlay.active { display: flex; }
+.capture-box {
+  background: var(--panel);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+}
+@keyframes pokeball-throw {
+  0% { transform: translateY(0) rotate(0); }
+  40% { transform: translateY(-40px) rotate(360deg); }
+  70% { transform: translateY(10px) rotate(700deg) scale(0.8); }
+  100% { transform: translateY(0) rotate(720deg) scale(1); }
+}
+.pokeball-anim {
+  display: inline-block;
+  font-size: 50px;
+  animation: pokeball-throw 1s ease-out forwards;
+}
   padding: 4px;
 }
 
@@ -1142,6 +1252,9 @@ body::before {
         <div style="margin-top:8px">
           <button class="btn" onclick="confirmWipeData()" style="border-color:#ef5350;color:#ef5350;width:100%">🗑 Reset Save</button>
         </div>
+        <div style="margin-top:6px">
+          <button class="btn" onclick="forceSave()" style="border-color:#66bb6a;color:#66bb6a;width:100%">💾 Force Save</button>
+        </div>
         <div style="margin-top:6px;font-size:12px;color:var(--text2);text-align:center">💾 Auto-saves every 30s</div>
       </div>
 
@@ -1154,6 +1267,8 @@ body::before {
           <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('name')">A-Z</button>
           <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('shiny')">✨</button>
           <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('type')">Type</button>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('stats')">Stats</button>
+          <button class="btn" style="padding:3px 8px;font-size:13px;flex:1" onclick="sortBox('team')">Team</button>
         </div>
         <button class="btn" style="width:100%;border-color:#ef5350;color:#ef5350;margin-bottom:8px;padding:4px 8px;font-size:14px" onclick="openQuickRelease()">🕊️ Quick Release (Multi)</button>
         <div class="poke-box" id="poke-box-grid"></div>
@@ -1210,8 +1325,9 @@ body::before {
         <div class="gacha-section" style="border-color:#e040fb;background:linear-gradient(135deg,rgba(60,0,100,0.4),rgba(20,0,50,0.2))">
           <h3 style="color:#e040fb">💠 EPIC ITEM GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
-            Rare items including <span style="color:#ff69b4">Rare Candy 🍬</span>!<br>
-            <span style="color:#e040fb">Stronger gear — endgame worthy</span>
+            <span style="color:#e040fb">10% chance for epic items 💠</span><br>
+            Includes <span style="color:#ff69b4">Rare Candy 🍬</span> &amp; powerful gear<br>
+            <span style="color:var(--text2)">Otherwise high-quality standard items</span>
           </div>
           <div class="gacha-btns">
             <button class="btn" style="border-color:#e040fb;color:#e040fb" onclick="doEpicItemGacha(1)">× 1<br><span style="font-size:13px;color:var(--gold)">💰 5,000</span></button>
@@ -1243,6 +1359,16 @@ body::before {
   <div id="bottom-bar">
     <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);writing-mode:vertical-rl;text-orientation:mixed;margin-right:4px">TEAM</div>
     <div id="bottom-slots" style="display:flex;gap:8px;flex:1;overflow-x:auto;padding-bottom:2px"></div>
+  </div>
+</div>
+
+<!-- CAPTURE OVERLAY -->
+<div id="capture-overlay">
+  <div class="capture-box">
+    <div id="capture-title" style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-bottom:12px">BATTLE WON!</div>
+    <div id="capture-sprite" style="margin:10px 0;min-height:80px"></div>
+    <div id="capture-text" style="font-size:15px;color:var(--text2);margin-bottom:14px"></div>
+    <div id="capture-btns" style="display:flex;gap:10px;justify-content:center"></div>
   </div>
 </div>
 
@@ -1534,6 +1660,24 @@ let enemyAttackTimer = null;
 let battlePaused = false;
 let pUid = 0;
 
+function generateIVs() {
+  // Generate 6 IVs 0-31, assign grades
+  const stats = ['hp','attack','defense','special-attack','special-defense','speed'];
+  const ivs = {};
+  stats.forEach(s => { ivs[s] = Math.floor(Math.random() * 32); });
+  return ivs;
+}
+
+function getStatGrade(iv) {
+  if(iv >= 31) return {label:'SS', color:'#ff69b4', isSS:true};
+  if(iv >= 28) return {label:'S',  color:'#ffd700'};
+  if(iv >= 24) return {label:'A',  color:'#66bb6a'};
+  if(iv >= 18) return {label:'B',  color:'#4fc3f7'};
+  if(iv >= 12) return {label:'C',  color:'#ab47bc'};
+  if(iv >= 6)  return {label:'D',  color:'#ff9e40'};
+  return {label:'F', color:'#ef5350'};
+}
+
 function newPokemonEntry(id, name, types, level, isShiny=false) {
   return {
     uid: ++pUid,
@@ -1543,6 +1687,7 @@ function newPokemonEntry(id, name, types, level, isShiny=false) {
     stats: null,
     exp: 0,
     expToNext: calcExpToNext(level),
+    ivs: generateIVs(),
   };
 }
 
@@ -1580,7 +1725,8 @@ function getEffectiveStat(stat, pokemon, statName) {
 function getMaxHp(pokemon) {
   if(!pokemon.stats) return 100;
   const base = pokemon.stats.find(s=>s.stat.name==='hp').base_stat;
-  let hp = Math.floor((base * 2 * pokemon.level / 100) + pokemon.level + 10);
+  const iv = pokemon.ivs ? pokemon.ivs['hp'] : 15;
+  let hp = Math.floor(((base * 2 + iv) * pokemon.level / 100) + pokemon.level + 10);
   if(pokemon.level > 100) hp = Math.floor(hp * (1 + (pokemon.level-100)*0.01));
   const allItems = ITEMS.concat(EPIC_ITEMS);
   const item = allItems.find(i=>i.id===gameState.equippedItems[pokemon.uid]);
@@ -1593,14 +1739,17 @@ function getAttack(pokemon) {
   const base = pokemon.stats.find(s=>s.stat.name==='attack').base_stat;
   const spa = pokemon.stats.find(s=>s.stat.name==='special-attack').base_stat;
   const atk = Math.max(base, spa);
-  let val = Math.floor((atk * 2 * pokemon.level / 100) + 5);
-  return getEffectiveStat(val, pokemon, atk >= spa ? 'attack' : 'special-attack');
+  const statName = atk >= spa ? 'attack' : 'special-attack';
+  const iv = pokemon.ivs ? pokemon.ivs[statName] : 15;
+  let val = Math.floor(((atk * 2 + iv) * pokemon.level / 100) + 5);
+  return getEffectiveStat(val, pokemon, statName);
 }
 
 function getSpeed(pokemon) {
   if(!pokemon.stats) return 50;
   const base = pokemon.stats.find(s=>s.stat.name==='speed').base_stat;
-  let val = Math.floor((base * 2 * pokemon.level / 100) + 5);
+  const iv = pokemon.ivs ? pokemon.ivs['speed'] : 15;
+  let val = Math.floor(((base * 2 + iv) * pokemon.level / 100) + 5);
   return getEffectiveStat(val, pokemon, 'speed');
 }
 
@@ -1883,7 +2032,11 @@ function doEnemyAttack(player) {
 
 function enemyDefeated(player) {
   if(bossBattleActive && currentEnemy?.isBoss) {
-    handleBossDefeated(player);
+    if(vrBattleActive && currentEnemy?._isVR) {
+      handleVRDefeated(player);
+    } else {
+      handleBossDefeated(player);
+    }
     return;
   }
 
@@ -1983,13 +2136,15 @@ function playerPokemonFainted(player) {
     if(nextIdx >= 0) {
       gameState.currentFighterIdx = nextIdx;
       const next = gameState.team[nextIdx];
-      addLog(`Go, ${next.name}! Fight Rayquaza! 💪`, 'log-heal');
+      const bossName = currentEnemy?.name || 'the Boss';
+      addLog(`Go, ${next.name}! Fight ${bossName}! 💪`, 'log-heal');
       updatePlayerUI(next);
       playerAttackCooldown = 0;
       enemyAttackCooldown = Date.now() + 800;
       renderBottomBar();
     } else {
-      handleBossFailed();
+      if(vrBattleActive) handleVRFailed();
+      else handleBossFailed();
     }
     return;
   }
@@ -2286,16 +2441,25 @@ function animateAttack(who) {
 
 function animateHurt(id) {
   const sprite = document.getElementById(id);
+  const pokemon = id === 'player-sprite' ? getCurrentFighter() : currentEnemy;
+  const isShiny = pokemon?.isShiny;
+  
   sprite.classList.remove('hurt-anim', 'hurt-anim-player');
   void sprite.offsetWidth;
   if(id === 'player-sprite') {
     sprite.style.animation = 'none';
     void sprite.offsetWidth;
-    sprite.style.animation = 'hurt-player 0.45s ease-out';
+    sprite.style.animation = isShiny ? 'hurt-player-shiny 0.45s ease-out' : 'hurt-player 0.45s ease-out';
     setTimeout(()=>{ sprite.style.animation = ''; }, 500);
   } else {
-    sprite.classList.add('hurt-anim');
-    setTimeout(()=>sprite.classList.remove('hurt-anim'), 500);
+    if(isShiny) {
+      sprite.classList.add('hurt-anim');
+      // Ensure shiny class stays
+      setTimeout(()=>{ sprite.classList.remove('hurt-anim'); }, 500);
+    } else {
+      sprite.classList.add('hurt-anim');
+      setTimeout(()=>sprite.classList.remove('hurt-anim'), 500);
+    }
   }
 }
 
@@ -2453,6 +2617,9 @@ async function startEventBoss() {
   if(gameState.gems < 150) { toast('Need 150 💎 Gems to challenge the Boss!'); return; }
   if(gameState.team.length === 0) { toast('You need a team to fight the Boss!'); return; }
 
+  // Stop auto battle when entering boss fight
+  battlePaused = true;
+  document.getElementById('auto-btn').textContent = '▶ RESUME';
   document.getElementById('modal-title').textContent = '🐉 RAYQUAZA Lv.270';
   document.getElementById('modal-content').innerHTML = `
     <div style="text-align:center;padding:8px">
@@ -2484,14 +2651,16 @@ async function confirmStartBoss() {
   updateResourceUI();
   closeModal();
 
+  // Pause any ongoing battle immediately
+  battlePaused = true;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  currentEnemy = null;
+
   const wasInRoad = gameState.road.active;
   const savedRoad = { ...gameState.road };
   gameState.road.active = false;
   document.getElementById('arena').classList.remove('road-mode');
-
-  currentEnemy = null;
-  playerAttackCooldown = 0;
-  enemyAttackCooldown = 0;
 
   const rayquazaStats = await fetchPokemonStats(384);
   bossEnemy = newPokemonEntry(384, 'Rayquaza', ['dragon','flying'], 270, false);
@@ -2516,6 +2685,7 @@ async function confirmStartBoss() {
   addLog(`⚠️ TITAN HP: ${formatNum(bossEnemy._bossHpMax)} — You need your whole team!`, 'log-evolve');
   toast('🐉 BOSS FIGHT: Rayquaza Lv.270! Full power!', 4000);
 
+  battlePaused = false;
   updateEnemyUI();
 }
 
@@ -2588,6 +2758,235 @@ function handleBossFailed() {
   setTimeout(_nextSpawnFail, 2500);
 }
 
+// ============================================================
+// VICTORY ROAD (Lv.265 Fixed)
+// ============================================================
+
+const VICTORY_ROAD_POOL = [
+  {id:445, name:'Garchomp',    types:['dragon','ground'], w:10},
+  {id:983, name:'Kingambit',   types:['dark','steel'],    w:10},
+  {id:149, name:'Dragonite',   types:['dragon','flying'], w:8},
+  {id:248, name:'Tyranitar',   types:['rock','dark'],     w:8},
+  {id:260, name:'Swampert',    types:['water','ground'],  w:7},
+  {id:373, name:'Salamence',   types:['dragon','flying'], w:6},
+  {id:376, name:'Metagross',   types:['steel','psychic'], w:6},
+  {id:466, name:'Electivire',  types:['electric'],        w:5},
+  {id:467, name:'Magmortar',   types:['fire'],            w:5},
+  {id:472, name:'Gliscor',     types:['ground','flying'], w:5},
+  {id:473, name:'Mamoswine',   types:['ice','ground'],    w:5},
+  {id:609, name:'Chandelure',  types:['ghost','fire'],    w:4},
+  {id:635, name:'Hydreigon',   types:['dark','dragon'],   w:3},
+  {id:706, name:'Goodra',      types:['dragon'],          w:3},
+];
+
+const VR_FIXED_LEVEL = 265;
+let vrBattleActive = false;
+let vrEnemy = null;
+
+function startVictoryRoad() {
+  if(gameState.gems < 80) { toast('Need 80 💎 Gems to enter Victory Road!'); return; }
+  if(gameState.team.length === 0) { toast('You need a team!'); return; }
+
+  // Stop auto battle when entering Victory Road
+  battlePaused = true;
+  document.getElementById('auto-btn').textContent = '▶ RESUME';
+  const chosen = pickFromPool(VICTORY_ROAD_POOL);
+  document.getElementById('modal-title').textContent = '⛰️ VICTORY ROAD Lv.265';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${chosen.id}.png"
+           width="120" height="120" style="image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(255,180,0,0.5))">
+      <div style="margin:10px 0;font-family:'Press Start 2P';font-size:8px;color:#ffd700">VICTORY ROAD CHALLENGER</div>
+      <div style="font-size:22px;color:var(--gold);margin-bottom:4px">${chosen.name} <span style="color:var(--text2);font-size:16px">Lv.${VR_FIXED_LEVEL}</span></div>
+      <div style="display:flex;gap:4px;justify-content:center;margin-bottom:10px">
+        ${chosen.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join('')}
+      </div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:12px">
+        Defeat it for a chance to capture!<br>
+        <span style="color:var(--gold)">Capture chance: ~30% · Shiny: 1/50</span><br>
+        <span style="color:var(--text2)">Cost: 80 💎 · Level stays at ${VR_FIXED_LEVEL}</span>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="confirmVictoryRoad(${chosen.id},'${chosen.name}','${chosen.types.join(',')}')">⚔️ Fight! (80💎)</button>
+        <button class="btn gold" onclick="closeModal()">Back</button>
+      </div>
+    </div>
+  `;
+  openModal();
+}
+
+async function confirmVictoryRoad(id, name, typesStr) {
+  if(gameState.gems < 80) { toast('Not enough Gems!'); closeModal(); return; }
+  gameState.gems -= 80;
+  updateResourceUI();
+  closeModal();
+
+  // Pause current battle
+  battlePaused = true;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  currentEnemy = null;
+
+  const savedRoad = { ...gameState.road };
+  gameState.road.active = false;
+  document.getElementById('arena').classList.remove('road-mode');
+
+  const types = typesStr.split(',');
+  const stats = await fetchPokemonStats(id);
+  vrEnemy = newPokemonEntry(id, name, types, VR_FIXED_LEVEL, false);
+  vrEnemy.stats = stats;
+  vrEnemy.statsLoaded = true;
+  vrEnemy._vrSavedRoad = savedRoad;
+  vrEnemy._isVR = true;
+  vrEnemy._attackMult = 0.55;
+  const baseHp = getMaxHp(vrEnemy);
+  vrEnemy._bossHpMax = Math.floor(baseHp * 2.5);
+  vrEnemy.currentHp = vrEnemy._bossHpMax;
+  vrEnemy.isBoss = true;
+
+  currentEnemy = vrEnemy;
+  vrBattleActive = true;
+  bossBattleActive = true;
+
+  gameState.team.forEach(p => { if(p.statsLoaded) p.currentHp = getMaxHp(p); });
+
+  document.getElementById('arena').style.background =
+    'radial-gradient(ellipse at 30% 60%, rgba(150,80,0,0.4) 0%, transparent 50%), radial-gradient(ellipse at 70% 30%, rgba(80,50,0,0.3) 0%, transparent 50%), linear-gradient(180deg, #0a0500 0%, #1a0f00 40%, #100800 100%)';
+
+  addLog(`⛰️ Victory Road: ${name} (Lv.${VR_FIXED_LEVEL}) appeared!`, 'log-evolve');
+  toast(`⛰️ VICTORY ROAD: ${name} Lv.${VR_FIXED_LEVEL}!`, 3000);
+
+  battlePaused = false;
+  updateEnemyUI();
+}
+
+function handleVRDefeated(player) {
+  const savedRoad = vrEnemy?._vrSavedRoad;
+  vrBattleActive = false;
+  bossBattleActive = false;
+  const defeatedMon = vrEnemy;
+  currentEnemy = null;
+  vrEnemy = null;
+
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) {
+    gameState.road = savedRoad;
+    document.getElementById('arena').classList.add('road-mode');
+  }
+
+  addLog(`🏆 ${defeatedMon.name} was defeated on Victory Road!`, 'log-evolve');
+
+  // Show capture screen
+  const captureChance = 0.30;
+  const canCapture = Math.random() < captureChance;
+  const isShiny = Math.random() < 1/50;
+
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+
+  showVRCaptureCutscene(defeatedMon, canCapture, isShiny, savedRoad);
+}
+
+function showVRCaptureCutscene(mon, canCapture, isShiny, savedRoad) {
+  const overlay = document.getElementById('capture-overlay');
+  const title = document.getElementById('capture-title');
+  const spriteEl = document.getElementById('capture-sprite');
+  const textEl = document.getElementById('capture-text');
+  const btnsEl = document.getElementById('capture-btns');
+
+  title.textContent = canCapture ? '⛰️ CAPTURE POSSIBLE!' : '⛰️ VICTORY ROAD CLEAR!';
+  title.style.color = canCapture ? '#ffd700' : '#66bb6a';
+
+  const spriteUrl = isShiny
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${mon.id}.png`
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${mon.id}.png`;
+
+  spriteEl.innerHTML = `<img src="${spriteUrl}" width="110" height="110" style="image-rendering:pixelated;${isShiny?'filter:drop-shadow(0 0 16px rgba(255,215,0,1)) drop-shadow(0 0 24px rgba(255,100,200,0.8))':''}">`;
+
+  if(canCapture) {
+    textEl.innerHTML = `
+      <div style="font-size:18px;color:var(--gold);margin-bottom:4px">${isShiny?'✨ SHINY ':''}<b>${mon.name}</b></div>
+      <div style="color:var(--text2);margin-bottom:4px">Lv.${VR_FIXED_LEVEL} wants to join your team!</div>
+      ${isShiny ? '<div class="shiny-text" style="font-size:12px">⭐ SHINY FOUND! ⭐</div>' : ''}
+    `;
+    btnsEl.innerHTML = `
+      <button class="btn gold" onclick="captureVRPokemon(${mon.id},'${mon.name}','${mon.types.join(',')}',${isShiny})">🎯 Capture!</button>
+      <button class="btn" onclick="skipVRCapture()">Pass</button>
+    `;
+  } else {
+    textEl.innerHTML = `
+      <div style="font-size:18px;color:var(--gold);margin-bottom:4px"><b>${mon.name}</b> fled!</div>
+      <div style="color:var(--text2)">Better luck next time!</div>
+    `;
+    btnsEl.innerHTML = `<button class="btn gold" style="width:100%" onclick="skipVRCapture()">Continue</button>`;
+  }
+
+  overlay.classList.add('active');
+
+  // Resume spawning after interaction
+}
+
+async function captureVRPokemon(id, name, typesStr, isShiny) {
+  document.getElementById('capture-overlay').classList.remove('active');
+  const types = typesStr.split(',');
+  const pk = newPokemonEntry(id, name, types, VR_FIXED_LEVEL, isShiny);
+  pk.stats = await fetchPokemonStats(id);
+  pk.statsLoaded = true;
+  pk.currentHp = getMaxHp(pk);
+  gameState.box.push(pk);
+
+  addLog(`${isShiny?'✨ SHINY ':''} ${name} was captured from Victory Road!`, isShiny ? 'log-shiny' : 'log-evolve');
+  toast(`${isShiny?'✨ SHINY ':''} ${name} captured!`, 4000);
+  renderAll();
+  showGachaResult(pk);
+
+  setTimeout(() => {
+    const savedRoad = { ...gameState.road };
+    const nextSpawn = (savedRoad.active)
+      ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+      : spawnEnemy;
+    nextSpawn();
+  }, 500);
+}
+
+function skipVRCapture() {
+  document.getElementById('capture-overlay').classList.remove('active');
+  const savedRoad = { ...gameState.road };
+  const nextSpawn = (savedRoad.active)
+    ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+    : spawnEnemy;
+  setTimeout(nextSpawn, 600);
+  renderAll();
+}
+
+function handleVRFailed() {
+  const savedRoad = vrEnemy?._vrSavedRoad;
+  vrBattleActive = false;
+  bossBattleActive = false;
+  currentEnemy = null;
+  vrEnemy = null;
+
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) {
+    gameState.road = savedRoad;
+    document.getElementById('arena').classList.add('road-mode');
+  }
+
+  addLog('💀 Victory Road challenger wiped your team!', 'log-dmg');
+  toast('💀 Defeated on Victory Road! Better luck next time!', 4000);
+
+  gameState.team.forEach(p => { p.currentHp = Math.max(1, Math.floor(getMaxHp(p)*0.25)); });
+  gameState.currentFighterIdx = 0;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+
+  renderAll();
+  const nextSpawn = (savedRoad && savedRoad.active)
+    ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy)
+    : spawnEnemy;
+  setTimeout(nextSpawn, 2500);
+}
+
 async function doPokemonGacha(count) {
   const cost = count === 1 ? 5 : 40;
   if(gameState.gems < cost) { toast('Not enough Gems! 💎'); return; }
@@ -2648,24 +3047,30 @@ async function doEpicItemGacha(count) {
 
   const gotten = [];
   for(let i=0; i<count; i++) {
-    const item = EPIC_ITEMS[Math.floor(Math.random()*EPIC_ITEMS.length)];
+    // 10% chance for an epic item, 90% chance for a standard item
+    const isEpicRoll = Math.random() < 0.10;
+    const item = isEpicRoll
+      ? EPIC_ITEMS[Math.floor(Math.random()*EPIC_ITEMS.length)]
+      : ITEMS[Math.floor(Math.random()*ITEMS.length)];
     gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
-    gotten.push(item);
+    gotten.push({...item, wasEpic: isEpicRoll});
   }
 
   const unique = [...new Set(gotten.map(i=>i.name))];
-  toast(`💠 Epic Items: ${unique.join(', ')}!`, 4000);
+  toast(`💠 Items: ${unique.join(', ')}!`, 4000);
   renderAll();
 
   if(count === 1) showItemGachaResult(gotten[0]);
   else {
-    document.getElementById('modal-title').textContent = '💠 Epic Items Received!';
+    document.getElementById('modal-title').textContent = '💠 Items Received!';
     document.getElementById('modal-content').innerHTML = `
+      <div style="font-size:12px;color:var(--text2);text-align:center;margin-bottom:8px">10% chance for Epic items each pull</div>
       <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px">
         ${gotten.map(item=>`
-          <div style="text-align:center;background:rgba(200,0,255,0.1);border:1px solid #e040fb;border-radius:8px;padding:10px;width:90px">
+          <div style="text-align:center;background:${item.wasEpic?'rgba(200,0,255,0.1)':'rgba(255,255,255,0.04)'};border:1px solid ${item.wasEpic?'#e040fb':'var(--border)'};border-radius:8px;padding:10px;width:90px">
             <div style="font-size:36px">${item.emoji}</div>
-            <div style="font-family:'Press Start 2P';font-size:6px;color:#e040fb;margin-top:4px">${item.name}</div>
+            <div style="font-family:'Press Start 2P';font-size:6px;color:${item.wasEpic?'#e040fb':'var(--gold)'};margin-top:4px">${item.name}</div>
+            ${item.wasEpic?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
           </div>
         `).join('')}
       </div>
@@ -2720,6 +3125,27 @@ function getBoxSorted() {
       return b.level-a.level;
     });
     case 'type': return arr.sort((a,b)=>dir*a.types[0].localeCompare(b.types[0]));
+    case 'stats': return arr.sort((a,b)=>{
+      const gradeOrder = {'SS':7,'S':6,'A':5,'B':4,'C':3,'D':2,'F':1};
+      const overallGrade = p => {
+        const ivs = p.ivs || {};
+        const vals = Object.values(ivs);
+        if(!vals.length) return 0;
+        const avg = vals.reduce((s,v)=>s+v,0) / vals.length;
+        return gradeOrder[getStatGrade(Math.round(avg)).label] || 0;
+      };
+      const diff = (overallGrade(b) - overallGrade(a)) * dir;
+      if(diff !== 0) return diff;
+      // Tiebreak by total IV sum
+      const sumIVs = p => Object.values(p.ivs||{}).reduce((s,v)=>s+v,0);
+      return (sumIVs(b) - sumIVs(a)) * dir;
+    });
+    case 'team': return arr.sort((a,b)=>{
+      const aInTeam = gameState.team.includes(a) ? 0 : 1;
+      const bInTeam = gameState.team.includes(b) ? 0 : 1;
+      if(aInTeam !== bInTeam) return aInTeam - bInTeam;
+      return b.level - a.level;
+    });
     default: return arr;
   }
 }
@@ -2850,19 +3276,51 @@ function showPokemonInfoCard(pk) {
 function renderMiniStats(pk) {
   if(!pk.stats) return '';
   const statNames = {hp:'HP',attack:'ATK',defense:'DEF','special-attack':'SpA','special-defense':'SpD',speed:'SPD'};
+  const statColors = {hp:'#ef5350',attack:'#ff9e40',defense:'#4fc3f7',
+    'special-attack':'#ab47bc','special-defense':'#66bb6a',speed:'#ffd700'};
   const maxBase = 255;
-  return pk.stats.map(s=>{
+  const ivs = pk.ivs || {};
+  
+  // Calculate overall IV rating
+  const totalIV = Object.values(ivs).reduce((a,b)=>a+b,0);
+  const maxIV = 31 * 6;
+  const overallPct = Math.round((totalIV / maxIV) * 100);
+  const overallGrade = getStatGrade(Math.round((totalIV/6)));
+  
+  let html = `
+    <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;margin-bottom:6px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2)">STATS & IVs</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;color:var(--text2)">Overall:</span>
+          ${overallGrade.isSS ? `<span class="ss-rainbow" style="font-size:9px">${overallGrade.label}</span>` : `<span style="font-family:'Press Start 2P';font-size:9px;color:${overallGrade.color};text-shadow:0 0 8px ${overallGrade.color}88">${overallGrade.label}</span>`}
+          <span style="font-size:11px;color:var(--text2)">(${overallPct}%)</span>
+        </div>
+      </div>
+  `;
+  
+  pk.stats.forEach(s => {
     const name = statNames[s.stat.name] || s.stat.name;
-    const effective = Math.floor((s.base_stat * 2 * pk.level / 100) + (s.stat.name==='hp' ? pk.level+10 : 5));
+    const iv = ivs[s.stat.name] ?? 15;
+    const grade = getStatGrade(iv);
+    const effective = Math.floor(((s.base_stat * 2 + iv) * pk.level / 100) + (s.stat.name==='hp' ? pk.level+10 : 5));
     const pct = Math.min(100, (s.base_stat / maxBase) * 100);
-    return `
-      <div class="stat-row">
-        <div class="stat-name">${name}</div>
-        <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${pct}%"></div></div>
-        <div class="stat-val">${effective}</div>
+    const ivPct = Math.round((iv / 31) * 100);
+    const barColor = statColors[s.stat.name] || 'var(--accent)';
+    html += `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+        <div style="width:32px;font-size:12px;color:var(--text2);flex-shrink:0">${name}</div>
+        <div style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;position:relative">
+          <div style="height:100%;border-radius:4px;background:${barColor};width:${pct}%;opacity:0.5"></div>
+          <div style="position:absolute;top:0;left:0;height:100%;border-radius:4px;background:${barColor};width:${ivPct}%;opacity:0.9;transition:width 0.5s"></div>
+        </div>
+        <div style="width:36px;text-align:right;font-size:14px;color:var(--gold);flex-shrink:0">${effective}</div>
+        <div style="width:22px;text-align:center;font-family:'Press Start 2P';font-size:7px;flex-shrink:0;overflow:visible">${grade.isSS ? `<span class="ss-rainbow">${grade.label}</span>` : `<span style="color:${grade.color};text-shadow:0 0 6px ${grade.color}66">${grade.label}</span>`}</div>
       </div>
     `;
-  }).join('');
+  });
+  html += '</div>';
+  return html;
 }
 
 function showItemModal(item) {
@@ -3222,7 +3680,7 @@ function saveGame() {
       box: gameState.box.map(p=>({
         uid:p.uid, id:p.id, name:p.name, types:p.types, level:p.level,
         isShiny:p.isShiny, currentHp:p.currentHp, exp:p.exp, expToNext:p.expToNext,
-        stats:p.stats, statsLoaded:p.statsLoaded
+        stats:p.stats, statsLoaded:p.statsLoaded, ivs:p.ivs
       })),
       teamUids: gameState.team.map(p=>p.uid),
       currentFighterIdx: gameState.currentFighterIdx,
@@ -3250,7 +3708,8 @@ function loadGame() {
 
     gameState.box = (save.box || []).map(p => ({
       ...p,
-      statsLoaded: !!p.stats
+      statsLoaded: !!p.stats,
+      ivs: p.ivs || generateIVs()
     }));
     gameState.team = (save.teamUids || []).map(uid => gameState.box.find(p=>p.uid===uid)).filter(Boolean);
     gameState.currentFighterIdx = Math.min(save.currentFighterIdx||0, Math.max(0,gameState.team.length-1));
@@ -3262,6 +3721,11 @@ function loadGame() {
 }
 
 setInterval(saveGame, 30000);
+
+function forceSave() {
+  saveGame();
+  toast('💾 Game saved!', 2000);
+}
 
 function confirmWipeData() {
   document.getElementById('modal-title').textContent = '⚠️ Reset All Data?';
@@ -3348,8 +3812,11 @@ function renderRoadUI() {
   const road = gameState.road;
 
   let html = `<div class="road-header">💎 DIAMOND ROAD 💎</div>
-    <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:10px">
+    <div style="font-size:13px;color:var(--text2);text-align:center;margin-bottom:4px">
       Your avg level: <span style="color:var(--gold)">Lv.${avgLvl}</span>
+    </div>
+    <div style="font-size:12px;color:var(--accent);text-align:center;margin-bottom:10px">
+      Enemies scale to <span style="color:var(--gold)">Lv.${Math.min(270, avgLvl + 10)}</span> (your avg +10) · 5% boss spawn at Lv.270
     </div>`;
 
   if(road.active && road.mode === 'floor') {
@@ -3359,7 +3826,7 @@ function renderRoadUI() {
     html += `
       <div class="road-floor-card active-floor">
         <div class="road-floor-title">▶ ${floor.name}</div>
-        <div class="road-floor-lvl">Enemy Lv.${floor.fixedEnemyLevel} (fixed) · ${nextGemIn}</div>
+        <div class="road-floor-lvl">Enemy Lv.~${Math.min(270, avgLvl + 10)} (your avg +10) · ${nextGemIn}</div>
         <div class="road-floor-reward">${floor.bonusGems} 💎 on clear · +${floor.goldBonus}💰/win</div>
         <div class="road-progress-bar"><div class="road-progress-fill" style="width:${pct}%"></div></div>
         <div style="font-size:13px;color:var(--text2);margin-top:3px">${road.winsOnFloor}/${floor.winsNeeded} wins</div>
@@ -3382,16 +3849,16 @@ function renderRoadUI() {
   else {
     html += `
       <div style="font-family:'Press Start 2P';font-size:7px;color:var(--text2);margin-bottom:6px;text-align:center">DIAMOND ROAD FLOORS</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center">Enemies have fixed levels — you need minimum avg level to enter.</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-align:center">Enemies scale to avg team level +10. 5% chance for a Lv.270 boss!</div>
     `;
     ROAD_FLOORS.forEach((floor, idx) => {
       const rate = floor.gemsPerThree ? '1💎/3 wins' : floor.gemsPerFive ? '1💎/5 wins' : '1💎/10 wins';
       const locked = avgLvl < floor.minLevel;
       html += `
         <div class="road-floor-card ${locked ? 'locked-floor' : ''}" ${locked ? '' : `onclick="enterRoad(${idx})"`} style="${locked ? 'opacity:0.5;cursor:not-allowed' : ''}">
-          <div class="road-floor-title">${locked ? '🔒 ' : ''}${floor.name}</div>
-          <div class="road-floor-lvl">Enemy Lv.${floor.fixedEnemyLevel} · ${floor.winsNeeded} wins to clear ${locked ? `· <span style="color:#ef5350">Need avg Lv.${floor.minLevel}</span>` : ''}</div>
-          <div class="road-floor-reward">${rate} · ${floor.bonusGems}💎 on clear · +${floor.goldBonus}💰/win</div>
+          <div class="road-floor-title" style="text-align:left">${locked ? '🔒 ' : ''}${floor.name}</div>
+          <div class="road-floor-lvl" style="text-align:left">${floor.winsNeeded} wins to clear${locked ? ` · <span style="color:#ef5350">Need avg Lv.${floor.minLevel}</span>` : ''}</div>
+          <div class="road-floor-reward" style="text-align:left">${rate} · ${floor.bonusGems}💎 on clear · +${floor.goldBonus}💰/win</div>
         </div>
       `;
     });
@@ -3417,6 +3884,24 @@ function renderRoadUI() {
 
     html += `
       <div style="font-family:'Press Start 2P';font-size:7px;color:#ff9e40;margin:14px 0 6px;text-align:center">⛰️ SCALES PEAK</div>
+      
+      <div style="font-family:'Press Start 2P';font-size:6px;color:#ffd700;margin:0 0 4px;text-align:center">🏔️ VICTORY ROAD</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px;text-align:center">Fight elite Pokémon at fixed Lv.265. Defeat them for a capture chance!</div>
+      <div class="victory-road-card" onclick="startVictoryRoad()">
+        <div class="vr-title">⛰️ VICTORY ROAD — Lv.265</div>
+        <div class="vr-subtitle">Garchomp · Kingambit · Hydreigon · Tyranitar & more</div>
+        <div class="vr-reward">~30% capture · Shiny 1/50 · Infinite fights</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <span style="font-size:20px" title="Garchomp">🦈</span>
+          <span style="font-size:20px" title="Kingambit">⚔️</span>
+          <span style="font-size:20px" title="Hydreigon">🐲</span>
+          <span style="font-size:20px" title="Salamence">🐉</span>
+          <span style="font-size:20px" title="Tyranitar">🦖</span>
+          <span style="font-size:20px" title="Metagross">🤖</span>
+        </div>
+        <button class="btn" style="border-color:#ffd700;color:#ffd700;width:100%;margin-top:8px">⚔️ CHALLENGE VICTORY ROAD (80💎)</button>
+      </div>
+
       <div class="road-floor-card" style="border-color:#ff6d00;background:linear-gradient(135deg,rgba(80,20,0,0.6),rgba(30,5,0,0.4))">
         <div class="road-floor-title" style="color:#ff9e40">🐉 TITAN RAYQUAZA Lv.270</div>
         <div class="road-floor-lvl" style="color:#ffb74d">The Sky Titan slumbers at the peak.</div>
@@ -3519,12 +4004,46 @@ async function spawnRoadEnemy() {
   const floor = ROAD_FLOORS[gameState.road.floor];
   const avgLvl = getAvgTeamLevel();
 
+  // 5% chance to spawn the Diamond Road Boss (Rayquaza-tier enemy at Lv.270)
+  const isBossSpawn = Math.random() < 0.05;
+
+  if(isBossSpawn) {
+    // Spawn a special boss enemy similar to Rayquaza stats
+    const DIAMOND_BOSSES = [
+      {id:384, name:'Rayquaza', types:['dragon','flying']},
+      {id:249, name:'Lugia', types:['psychic','flying']},
+      {id:250, name:'Ho-Oh', types:['fire','flying']},
+      {id:382, name:'Kyogre', types:['water']},
+      {id:383, name:'Groudon', types:['ground']},
+    ];
+    const bossTemplate = DIAMOND_BOSSES[Math.floor(Math.random()*DIAMOND_BOSSES.length)];
+    const bossStats = await fetchPokemonStats(bossTemplate.id);
+    const boss = newPokemonEntry(bossTemplate.id, bossTemplate.name, bossTemplate.types, 270, false);
+    boss.stats = bossStats;
+    boss.statsLoaded = true;
+    boss.currentHp = getMaxHp(boss);
+    boss._roadBoss = true;
+    currentEnemy = boss;
+
+    const flash = document.getElementById('encounter-flash');
+    flash.style.transition = 'opacity 0.05s';
+    flash.style.opacity = '1';
+    setTimeout(()=>{ flash.style.transition = 'opacity 1.2s'; flash.style.opacity = '0'; }, 120);
+
+    updateEnemyUI();
+    addLog(`🐉 DIAMOND BOSS: ${bossTemplate.name} Lv.270 appeared!`, 'log-evolve');
+    toast(`⚠️ BOSS SPAWN: ${bossTemplate.name} Lv.270!`, 3000);
+    return;
+  }
+
+  // Normal road enemy: avg team level + 10, with small variance
+  const targetLvl = Math.min(270, avgLvl + 10);
+  const lvl = Math.max(1, targetLvl + Math.floor((Math.random()-0.5)*6));
+
   const pool = GACHA_POOL;
   const chosen = pool[Math.floor(Math.random()*pool.length)];
   const isShiny = Math.random() < 1/512;
 
-  const baseLvl = floor.fixedEnemyLevel;
-  const lvl = Math.max(1, baseLvl + Math.floor((Math.random()-0.5)*6));
   const enemy = newPokemonEntry(chosen.id, chosen.name, chosen.types, lvl, isShiny);
   enemy.stats = await fetchPokemonStats(chosen.id);
   enemy.statsLoaded = true;
