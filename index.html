@@ -1040,9 +1040,6 @@ body::before {
           <button class="btn" onclick="openTradeOverlay()" style="border-color:#00c853;color:#69f0ae;width:100%">🔄 Trade Pokémon</button>
         </div>
         <div style="margin-top:6px">
-          <button class="btn" onclick="confirmWipeData()" style="border-color:#ef5350;color:#ef5350;width:100%">🗑 Reset Save</button>
-        </div>
-        <div style="margin-top:6px">
           <button class="btn" onclick="forceSave()" style="border-color:#66bb6a;color:#66bb6a;width:100%">💾 Force Save</button>
         </div>
         <div style="margin-top:6px;font-size:12px;color:var(--text2);text-align:center">💾 Auto-saves every 30s</div>
@@ -1527,7 +1524,7 @@ async function doRedeem() {
     // Fallback: hardcoded codes matching the pastebin
     const FALLBACK_CODES = {
       'X7F2K9LQ5Z': 50, 'M4R8T1VY6P': 50, 'Z9N3W6X2KD': 50,
-      'Q5L8C2B7RM': 50, 'T1V9P4X8ZH': 50, '50GEMSUPDATE': 50,
+      'Q5L8C2B7RM': 50, 'T1V9P4X8ZH': 50,
       'A8K3Z7M2QX': 100, 'R6T9L4W1PV': 100, 'Y2X8C5N7KD': 100,
       'B9Q4M1Z6RT': 100, 'L7V2P8X3CW': 100,
       'Z4X9K2M7QP': 250, 'V8L3T6R1ZY': 250, 'Q2M7P4X9KD': 250,
@@ -1893,6 +1890,16 @@ async function chooseStarter(s) {
   renderAll();
   spawnEnemy();
   startBattle();
+
+  // Auto-save to the slot that was chosen when starting new game
+  if(typeof window._newGameTargetSlot === 'number') {
+    const slotIdx = window._newGameTargetSlot;
+    window._newGameTargetSlot = null;
+    const saves = getAllSaves();
+    saves[slotIdx] = buildSaveData(gameState.trainerName + "'s Game");
+    setAllSaves(saves);
+    toast(`💾 Saved to slot ${slotIdx + 1}!`, 2500);
+  }
 }
 
 // ============================================================
@@ -4209,10 +4216,10 @@ function saveAndStartFresh(slotIdx) {
   if(name === null) return; // cancelled
   if(!confirm('Start a new game in this slot? Your current unsaved progress will be lost!')) return;
   closeSavesOverlay();
-  _resetGameState(name.trim().substring(0, 12) || 'Trainer');
+  _resetGameState(name.trim().substring(0, 12) || 'Trainer', slotIdx);
 }
 
-function _resetGameState(trainerName) {
+function _resetGameState(trainerName, targetSlotIdx) {
   // Stop battle
   if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
   bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false;
@@ -4235,6 +4242,17 @@ function _resetGameState(trainerName) {
   // Hide game, show starter screen
   document.getElementById('game').style.display = 'none';
   document.getElementById('starter-screen').style.display = 'flex';
+
+  // Remember which slot to save into once starter is picked
+  if(typeof targetSlotIdx === 'number') {
+    window._newGameTargetSlot = targetSlotIdx;
+  } else {
+    // startFreshGame (no slot picked) — find first empty slot
+    const saves = getAllSaves();
+    const emptyIdx = saves.findIndex(s => !s);
+    window._newGameTargetSlot = emptyIdx >= 0 ? emptyIdx : null;
+  }
+
   showStarterPicker();
 
   toast(`🌱 New game! Welcome, ${trainerName}! Choose your starter!`, 4000);
@@ -4463,10 +4481,14 @@ async function processTradeReceive() {
   const data = decodePokemonTrade(code);
   if(!data) { toast('❌ Invalid trade code!', 3000); return; }
   
+  // Level cap: 50 until wave 1000, then full level
+  const receivedLevel = gameState.wave >= 1000 ? (data.level || 50) : Math.min(50, data.level || 50);
+
   // Give new UID and mark OT
   const pk = {
     ...data,
     uid: ++pUid,
+    level: receivedLevel,
     ot: data.ot || 'Unknown',
     statsLoaded: !!data.stats,
     ivs: data.ivs || generateIVs(),
@@ -4486,6 +4508,7 @@ async function processTradeReceive() {
       <img src="${getSpriteUrl(pk.id, pk.isShiny)}" width="90" height="90" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
       <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:10px">${cosmic?'🌌 COSMIC ':pk.isShiny?'✨ ':''}${pk.name} received!</div>
       <div style="font-size:14px;color:var(--text2);margin-top:6px">Lv.${pk.level} · OT: ${pk.ot}</div>
+      ${gameState.wave < 1000 && data.level > 50 ? `<div style="font-size:12px;color:#ff9e40;margin-top:2px">⚠️ Capped at Lv.50 (reach Wave 1000 to receive full level)</div>` : ''}
       <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
     </div>`;
   toast(`📥 ${pk.name} received from ${pk.ot}!`, 4000);
