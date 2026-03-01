@@ -1082,6 +1082,7 @@ body::before {
             <button class="btn" style="border-color:#9c27b0;color:#ce93d8;background:rgba(80,0,120,0.2)" onclick="doEpicGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💎 450</span></button>
           </div>
         </div>
+
         <div class="gacha-section" style="border-color:#ff69b4;background:linear-gradient(135deg,rgba(120,0,80,0.3),rgba(60,0,40,0.2))">
           <h3 style="color:#ff69b4">✨ SHINY GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center"><span class="shiny-text">Guaranteed Shiny Pokémon!</span><br><span style="color:#ff69b4">From Epic pool · 1/25 legendary chance</span></div>
@@ -1089,6 +1090,25 @@ body::before {
             <button class="btn" style="border-color:#ff69b4;color:#ff69b4;width:100%" onclick="doShinyGacha()">× 1<br><span style="font-size:13px;color:var(--gold)">💎 450</span></button>
           </div>
         </div>
+
+        <!-- GOLD SHINY PULL — premium gold alternative -->
+        <div style="border:2px solid;border-image:linear-gradient(135deg,#ffd700,#ff8c00,#ffd700) 1;border-radius:10px;padding:12px;margin-bottom:10px;background:linear-gradient(135deg,rgba(80,50,0,0.45),rgba(40,20,0,0.3));position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,215,0,0.08),transparent 70%);pointer-events:none"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:22px">💰</span>
+            <h3 style="font-family:'Press Start 2P',monospace;font-size:8px;background:linear-gradient(90deg,#ffd700,#ff8c00,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 2s linear infinite">GOLD SHINY PULL</h3>
+            <span style="font-size:22px">✨</span>
+          </div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.5">
+            <span style="color:#ffd700">Guaranteed Shiny</span> — no gems needed!<br>
+            <span style="color:#888;font-size:12px">Same quality as Shiny Gacha · Epic pool</span>
+          </div>
+          <button onclick="doGoldShinyPull()" style="width:100%;padding:10px;border-radius:8px;cursor:pointer;font-family:'VT323',monospace;font-size:17px;letter-spacing:1px;background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,120,0,0.1));border:2px solid #ffd700;color:#ffd700;transition:all 0.2s" onmouseover="this.style.boxShadow='0 0 20px rgba(255,215,0,0.45)';this.style.borderColor='#fff176'" onmouseout="this.style.boxShadow='';this.style.borderColor='#ffd700'">
+            ✨ Pull Shiny Pokémon<br>
+            <span style="font-size:14px;color:#ffcc02">💰 10,000,000 Gold</span>
+          </button>
+        </div>
+
         <div class="gacha-section">
           <h3>🎁 ITEM GACHA</h3>
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">Standard held items &amp; equipment<br><span style="color:#ff69b4">30% chance for Rare Candy 🍬</span></div>
@@ -1105,16 +1125,23 @@ body::before {
             <button class="btn" style="border-color:#e040fb;color:#e040fb;background:rgba(80,0,120,0.2)" onclick="doEpicItemGacha(10)">× 10<br><span style="font-size:13px;color:var(--gold)">💰 40,000</span></button>
           </div>
         </div>
+        <!-- MAX CANDY BULK PULL -->
+        <div class="gacha-section" style="border-color:#ff8f00;background:linear-gradient(135deg,rgba(60,30,0,0.5),rgba(30,15,0,0.3));position:relative;overflow:hidden">
+          <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,140,0,0.03) 8px,rgba(255,140,0,0.03) 16px);pointer-events:none"></div>
+          <h3 style="color:#ffb300;text-shadow:0 0 12px rgba(255,179,0,0.5)">🍭 MAX CANDY BUNDLE</h3>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px;text-align:center">
+            <span style="color:#ffb300;font-size:15px">× 10 Max Candies</span> — guaranteed!<br>
+            <span style="color:#888;font-size:12px">Works on any Pokémon up to Lv.250</span>
+          </div>
+          <button onclick="doBulkMaxCandyPull()" style="width:100%;padding:10px;border-radius:8px;cursor:pointer;font-family:'VT323',monospace;font-size:17px;letter-spacing:1px;background:linear-gradient(135deg,rgba(255,140,0,0.25),rgba(255,100,0,0.1));border:2px solid #ff8f00;color:#ffb300;transition:all 0.2s;position:relative" onmouseover="this.style.boxShadow='0 0 18px rgba(255,140,0,0.5)';this.style.borderColor='#ffc107'" onmouseout="this.style.boxShadow='';this.style.borderColor='#ff8f00'">
+            🍭 × 10 Max Candy<br>
+            <span style="font-size:14px;color:#ffd700">💰 5,000,000 Gold</span>
+          </button>
+        </div>
+
         <div class="gacha-section" style="border-color:#00c853;background:linear-gradient(135deg,rgba(0,50,20,0.4),rgba(0,20,10,0.2))">
           <h3 style="color:#69f0ae">🌟 FREE DAILY</h3>
           <button class="btn" style="border-color:#00c853;color:#69f0ae;width:100%;margin-top:4px" id="daily-btn" onclick="doDaily()">CLAIM FREE PULL</button>
-        </div>
-        <div class="gacha-section" style="border-color:#ffd700;background:linear-gradient(135deg,rgba(80,60,0,0.4),rgba(40,30,0,0.2))">
-          <h3 style="color:#ffd700">💰 GOLD SHINY PULL</h3>
-          <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center"><span style="color:#ffd700">Spend 10,000,000 Gold for a guaranteed Shiny!</span><br><span style="color:var(--text2)">From Epic pool · Same quality as Shiny Gacha</span></div>
-          <div class="gacha-btns">
-            <button class="btn" style="border-color:#ffd700;color:#ffd700;width:100%" onclick="doGoldShinyPull()">× 1<br><span style="font-size:13px;color:var(--gold)">💰 10,000,000</span></button>
-          </div>
         </div>
       </div>
 
@@ -2348,7 +2375,7 @@ function renderPokemonBox() {
       <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:3px">
         ${p.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]};font-size:10px">${t}</span>`).join('')}
       </div>
-      ${canPull ? `<button onclick="event.stopPropagation();pullToLevel(${p.uid})" style="margin-top:5px;width:100%;background:linear-gradient(135deg,rgba(79,195,247,0.2),rgba(79,195,247,0.05));border:1px solid rgba(79,195,247,0.5);color:var(--accent);border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:14px;padding:4px 4px;line-height:1.3">⬆ Lv.${targetLevel}<br><span style="color:var(--gold);font-size:12px">25💎</span></button>` : ''}
+      ${canPull ? `<button onclick="event.stopPropagation();pullToLevel(${p.uid})" style="margin-top:5px;width:100%;background:linear-gradient(135deg,rgba(79,195,247,0.2),rgba(79,195,247,0.05));border:1px solid rgba(79,195,247,0.5);color:var(--accent);border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:14px;padding:4px 4px;line-height:1.3">⬆ Lv.${targetLevel}<br><span style="color:var(--gold);font-size:12px">100💎</span></button>` : ''}
     `;
     div.onclick = () => showPokemonModal(p);
     div.oncontextmenu = (e) => { e.preventDefault(); showPokemonInfoCard(p); };
@@ -3213,11 +3240,11 @@ function showItemModal(item) {
 function getPullTargetLevel() {
   const allLevels = gameState.box.map(p => p.level).filter(l => l <= 250);
   if(allLevels.length === 0) return 5;
-  return Math.max(1, Math.max(...allLevels) - 5);
+  return Math.min(220, Math.max(1, Math.max(...allLevels) - 5));
 }
 
 function pullToLevel(uid) {
-  if(gameState.gems < 25) { toast('Need 25 💎 Gems!'); return; }
+  if(gameState.gems < 100) { toast('Need 100 💎 Gems!'); return; }
   const pk = gameState.box.find(p => p.uid === uid);
   if(!pk) return;
   const targetLevel = getPullTargetLevel();
@@ -3230,9 +3257,10 @@ function pullToLevel(uid) {
         <div style="text-align:left">
           <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${pk.name}</div>
           <div style="font-size:15px;color:var(--text2);margin-top:4px">Lv.${pk.level} → <span style="color:var(--accent)">Lv.${targetLevel}</span></div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">Max pull level: 220</div>
         </div>
       </div>
-      <div style="font-size:15px;color:var(--gold);margin-bottom:14px">Cost: 25 💎</div>
+      <div style="font-size:15px;color:var(--gold);margin-bottom:14px">Cost: 100 💎</div>
       <div style="display:flex;gap:10px">
         <button class="btn" style="flex:1;border-color:var(--accent);color:var(--accent)" onclick="confirmPullToLevel(${uid})">⬆️ Confirm!</button>
         <button class="btn" style="flex:1" onclick="closeModal()">Cancel</button>
@@ -3243,12 +3271,12 @@ function pullToLevel(uid) {
 }
 
 function confirmPullToLevel(uid) {
-  if(gameState.gems < 25) { toast('Not enough Gems!'); closeModal(); return; }
+  if(gameState.gems < 100) { toast('Not enough Gems!'); closeModal(); return; }
   const pk = gameState.box.find(p => p.uid === uid);
   if(!pk) { closeModal(); return; }
   const targetLevel = getPullTargetLevel();
   if(pk.level >= targetLevel) { closeModal(); return; }
-  gameState.gems -= 25;
+  gameState.gems -= 100;
   const oldLevel = pk.level;
   pk.level = targetLevel;
   pk.expToNext = calcExpToNext(pk.level);
@@ -4210,6 +4238,44 @@ function _resetGameState(trainerName) {
   showStarterPicker();
 
   toast(`🌱 New game! Welcome, ${trainerName}! Choose your starter!`, 4000);
+}
+
+// ============================================================
+// BULK MAX CANDY PULL
+// ============================================================
+
+function doBulkMaxCandyPull() {
+  const cost = 5000000;
+  if(gameState.gold < cost) {
+    toast(`Need 5,000,000 💰 Gold! (have ${formatNum(gameState.gold)})`, 3000);
+    return;
+  }
+  document.getElementById('modal-title').textContent = '🍭 Max Candy Bundle';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <div style="font-size:48px;margin-bottom:8px">🍭🍭🍭</div>
+      <div style="font-family:'Press Start 2P';font-size:8px;color:#ffb300;margin-bottom:8px">× 10 MAX CANDY</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:14px">Add 10 Max Candies to your bag.<br><span style="color:#69f0ae;font-size:13px">Works on any Pokémon up to Lv.250!</span></div>
+      <div style="font-size:15px;color:var(--gold);margin-bottom:16px">Cost: 💰 5,000,000 Gold</div>
+      <div style="display:flex;gap:10px">
+        <button class="btn" style="flex:1;border-color:#ffb300;color:#ffb300" onclick="confirmBulkMaxCandy()">🍭 Confirm!</button>
+        <button class="btn" style="flex:1" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  `;
+  openModal();
+}
+
+function confirmBulkMaxCandy() {
+  const cost = 5000000;
+  if(gameState.gold < cost) { toast('Not enough Gold!'); closeModal(); return; }
+  gameState.gold -= cost;
+  gameState.inventory['max_candy'] = (gameState.inventory['max_candy'] || 0) + 10;
+  updateResourceUI();
+  renderAll();
+  closeModal();
+  toast('🍭 × 10 Max Candy added to your bag!', 3500);
+  addLog('🍭 Bought × 10 Max Candy bundle!', 'log-evolve');
 }
 
 // ============================================================
