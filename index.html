@@ -1817,9 +1817,9 @@ const EPIC_ITEMS = [
   {id:'dna_splicer', name:'DNA Splicer',  emoji:'🧬', desc:'Fuses Kyurem with Zekrom or Reshiram on your team into Black or White Kyurem. Massive stat boost. Remove item to split apart', effect:'dna_splicer'},
   {id:'heros_sword', name:"Hero's Sword", emoji:'⚔️', desc:'A legendary blade reforged from rust and faith. Only Zacian can wield it — awakens Crowned Form with SSS stats. 1% drop from the Zacian boss', effect:'heros_sword'},
   {id:'heros_shield',name:"Hero's Shield",emoji:'🛡️', desc:'A legendary shield reforged from rust and will. Only Zamazenta can bear it — awakens Crowned Form with SSS stats. 1% drop from the Zamazenta boss', effect:'heros_shield'},
-  {id:'sceptilite',  name:'Sceptilite',   emoji:'💚', desc:'A Mega Stone for Sceptile. Triggers Mega Evolution — SS stats become MEGA (stronger SSS). Counts as boss/legendary for team rules. 1% from Premium Gacha', effect:'sceptilite'},
-  {id:'swampertite', name:'Swampertite',  emoji:'💙', desc:'A Mega Stone for Swampert. Triggers Mega Evolution — SS stats become MEGA (stronger SSS). Counts as boss/legendary for team rules. 1% from Premium Gacha', effect:'swampertite'},
-  {id:'blazikenite', name:'Blazikenite',  emoji:'🔥', desc:'A Mega Stone for Blaziken. Triggers Mega Evolution — SS stats become MEGA (stronger SSS). Counts as boss/legendary for team rules. 1% from Premium Gacha', effect:'blazikenite'},
+  {id:'sceptilite',  name:'Cracked Sceptilite',   emoji:'💚', desc:'A Mega Stone for Sceptile — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'sceptilite'},
+  {id:'swampertite', name:'Cracked Swampertite',  emoji:'💙', desc:'A Mega Stone for Swampert — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'swampertite'},
+  {id:'blazikenite', name:'Cracked Blazikenite',  emoji:'🔥', desc:'A Mega Stone for Blaziken — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'blazikenite'},
   // Epic held items
   {id:'mega_stone',  name:'Mega Stone',   emoji:'💎', desc:'+35% to all stats. No conditions.', effect:'mega_stone', value:1.35},
   {id:'soul_dew',    name:'Soul Dew',     emoji:'💠', desc:'+45% Special Attack, +25% Special Defense', effect:'soul_dew', value:1.45},
@@ -1897,19 +1897,53 @@ function isCrownedZamazenta(pokemon) {
   return gameState.equippedItems[pokemon.uid] === 'heros_shield';
 }
 
+function getMegaStoneBaseId(itemId) {
+  if(!itemId) return null;
+  if(itemId === 'sceptilite' || itemId === 'swampertite' || itemId === 'blazikenite') return itemId;
+  if(gameState && gameState.megaStoneInstances && gameState.megaStoneInstances[itemId]) return gameState.megaStoneInstances[itemId].base;
+  return null;
+}
+
+function isMegaStoneInstance(itemId) {
+  return !!(gameState && gameState.megaStoneInstances && gameState.megaStoneInstances[itemId]);
+}
+
+// Resolves any item ID (including instance IDs) to a display-ready item object
+function getItemByEquipId(equipId) {
+  if(!equipId) return null;
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  // Direct match first
+  const direct = allItems.find(i => i.id === equipId);
+  if(direct) return direct;
+  // Check if it's a mega stone instance
+  if(gameState && gameState.megaStoneInstances && gameState.megaStoneInstances[equipId]) {
+    const data = gameState.megaStoneInstances[equipId];
+    const base = allItems.find(i => i.id === data.base);
+    if(base) {
+      const STAT_LABELS = {'attack':'Atk','special-attack':'Sp.Atk','defense':'Def','special-defense':'Sp.Def','speed':'Spd'};
+      const bonusLabel = `+${Math.round(data.pct*100)}% ${STAT_LABELS[data.stat]||data.stat}`;
+      return { ...base, id: equipId, name: `${base.name} (${bonusLabel})`, _instanceData: data };
+    }
+  }
+  return null;
+}
+
 function isMegaSceptile(pokemon) {
   if(!pokemon || pokemon.id !== 254) return false;
-  return gameState.equippedItems[pokemon.uid] === 'sceptilite';
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'sceptilite' || (getMegaStoneBaseId(eq) === 'sceptilite');
 }
 
 function isMegaSwampert(pokemon) {
   if(!pokemon || pokemon.id !== 260) return false;
-  return gameState.equippedItems[pokemon.uid] === 'swampertite';
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'swampertite' || (getMegaStoneBaseId(eq) === 'swampertite');
 }
 
 function isMegaBlaziken(pokemon) {
   if(!pokemon || pokemon.id !== 257) return false;
-  return gameState.equippedItems[pokemon.uid] === 'blazikenite';
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'blazikenite' || (getMegaStoneBaseId(eq) === 'blazikenite');
 }
 
 function hasMegaOnTeam(excludeUid) {
@@ -2012,7 +2046,8 @@ async function doRedeem() {
       'MIDWEEKGIFT777': 777,
       'GAMECHANGER': 'envy_rayquaza',
       'GENVHARD': 500,
-      'MEGASGALORE': 'gold_5m',
+      'REVIVEDMEGAS': 'gold_5m',
+      'FULLPOWER777': 777,
     };
 
     let codeMap = FALLBACK_CODES;
@@ -2054,6 +2089,13 @@ async function doRedeem() {
         addLog('&#x1F9EC; DNSFORDAYS: +1 DNA Splicer added to inventory!', 'log-evolve');
         toast('&#x1F9EC; +1 DNA Splicer!', 4000);
         setTimeout(function(){ resultEl.innerHTML = '<span style="font-family:\'Press Start 2P\';font-size:8px;color:#00e5ff">DNA SPLICER!</span>'; }, 100);
+      } else if(reward === 'gold_5m') {
+        gameState.gold += 5000000;
+        updateResourceUI();
+        resultEl.innerHTML = '<span style="color:#ffd700">&#x1F4B0; REVIVEDMEGAS redeemed! +5,000,000 Gold!</span>';
+        addLog('&#x1F4B0; REVIVEDMEGAS: +5,000,000 Gold!', 'log-evolve');
+        toast('&#x1F4B0; +5,000,000 Gold!', 4000);
+        setTimeout(function(){ resultEl.innerHTML = '<span style="font-family:\'Press Start 2P\';font-size:8px;background:linear-gradient(90deg,#ffd700,#fffde7,#ffd700);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 1s linear infinite">+5M GOLD!</span>'; }, 100);
       } else if(reward === 'gold_15m') {
         gameState.gold += 15000000;
         updateResourceUI();
@@ -2204,7 +2246,9 @@ function getEffectiveStat(stat, pokemon, statName) {
   let val = stat;
   if(pokemon.level > 100) val = Math.floor(val * (1 + (pokemon.level - 100) * 0.008));
   const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i => i.id === gameState.equippedItems[pokemon.uid]);
+  const equippedId = gameState.equippedItems[pokemon.uid];
+  const resolvedId = getMegaStoneBaseId(equippedId) || equippedId;
+  const item = allItems.find(i => i.id === resolvedId);
   if(item) {
     if(item.effect === 'atk_boost' && statName === 'attack') val = Math.floor(val * item.value);
     if(item.effect === 'spatk_boost' && statName === 'special-attack') val = Math.floor(val * item.value);
@@ -2269,6 +2313,10 @@ function getEffectiveStat(stat, pokemon, statName) {
       if(isSSSCandyStat) val = Math.floor(val * 2.3);
       else val = Math.floor(val * 1.85);
     }
+    // Pre-rolled stone bonus (new stones only; old ones have _megaStoneBonus = null)
+    if(['sceptilite','swampertite','blazikenite'].includes(item.effect) && pokemon._megaStoneBonus && pokemon._megaStoneBonus.stat === statName) {
+      val = Math.floor(val * (1 + pokemon._megaStoneBonus.pct));
+    }
   }
   return val;
 }
@@ -2280,7 +2328,9 @@ function getMaxHp(pokemon) {
   let hp = Math.floor(((base * 2 + iv) * pokemon.level / 100) + pokemon.level + 10);
   if(pokemon.level > 100) hp = Math.floor(hp * (1 + (pokemon.level-100)*0.01));
   const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===gameState.equippedItems[pokemon.uid]);
+  const equippedId = gameState.equippedItems[pokemon.uid];
+  const resolvedId = getMegaStoneBaseId(equippedId) || equippedId;
+  const item = allItems.find(i=>i.id===resolvedId);
   if(item?.effect === 'prism_scale') hp = Math.floor(hp * 1.2);
   if(pokemon._sssUsed && pokemon._sssStat === 'hp') hp = Math.floor(hp * 1.4);
   if(item?.effect === 'meteorite' && pokemon.id === 384) hp = Math.floor(hp * 1.35); // Mega Rayquaza
@@ -2294,9 +2344,9 @@ function getMaxHp(pokemon) {
   }
   if(item?.effect === 'heros_sword' && pokemon.id === 888) hp = Math.floor(hp * 1.56); // Crowned Zacian: glass cannon — high ATK, moderate HP (~3.1k at 100)
   if(item?.effect === 'heros_shield' && pokemon.id === 889) hp = Math.floor(hp * 4.5); // Crowned Zamazenta: fortress HP
-  if(item?.effect === 'sceptilite' && pokemon.id === 254) hp = Math.floor(hp * 1.85); // Mega Sceptile
-  if(item?.effect === 'swampertite' && pokemon.id === 260) hp = Math.floor(hp * 1.85); // Mega Swampert
-  if(item?.effect === 'blazikenite' && pokemon.id === 257) hp = Math.floor(hp * 1.85); // Mega Blaziken
+  if(item?.effect === 'sceptilite' && pokemon.id === 254) hp = Math.floor(hp * 1.2); // Mega Sceptile ~2060
+  if(item?.effect === 'swampertite' && pokemon.id === 260) hp = Math.floor(hp * 1.1); // Mega Swampert ~2300
+  if(item?.effect === 'blazikenite' && pokemon.id === 257) hp = Math.floor(hp * 1.15); // Mega Blaziken ~2120
   return hp;
 }
 
@@ -2798,7 +2848,7 @@ function battleTick() {
   if(!battleTick.lastRegen) battleTick.lastRegen = now;
   if(now - battleTick.lastRegen >= 1000) {
     battleTick.lastRegen = now;
-    const regenItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[player.uid]);
+    const regenItem = getItemByEquipId(gameState.equippedItems[player.uid]);
     if(regenItem?.effect === 'regen') {
       const heal = Math.max(1, Math.floor(getMaxHp(player) / 8));
       const prev = player.currentHp;
@@ -2827,7 +2877,7 @@ function doPlayerAttack(player) {
   let dmg = Math.max(1, getAttack(player) + Math.floor((Math.random()-0.5)*10));
 
   const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===gameState.equippedItems[player.uid]);
+  const item = getItemByEquipId(gameState.equippedItems[player.uid]);
   if(item?.effect === 'life_orb') {
     dmg = Math.floor(dmg * 1.4);
     const selfDmg = Math.floor(getMaxHp(player) * 0.08);
@@ -2840,7 +2890,7 @@ function doPlayerAttack(player) {
 
   currentEnemy.currentHp = Math.max(0, currentEnemy.currentHp - dmg);
 
-  const enemyItem = allItems.find(i=>i.id===gameState.equippedItems[currentEnemy?.uid]);
+  const enemyItem = getItemByEquipId(gameState.equippedItems[currentEnemy?.uid]);
   if(enemyItem?.effect === 'rocky_helmet') {
     const recoil = Math.floor(getMaxHp(player) / 4);
     player.currentHp = Math.max(0, player.currentHp - recoil);
@@ -2861,7 +2911,7 @@ function doEnemyAttack(player) {
   if(currentEnemy._attackMult) dmg = Math.floor(dmg * currentEnemy._attackMult);
 
   const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===gameState.equippedItems[player.uid]);
+  const item = getItemByEquipId(gameState.equippedItems[player.uid]);
   if(item?.effect === 'spdef_boost') dmg = Math.floor(dmg * 0.74);
   if(item?.effect === 'def_boost') dmg = Math.floor(dmg * 0.74);
   if(item?.effect === 'eviolite') dmg = Math.floor(dmg * 0.78);
@@ -2952,7 +3002,7 @@ function enemyDefeated(player) {
   }
 
   let expGain = Math.floor(currentEnemy.level * 15 + Math.random() * 20 + 10);
-  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[player.uid]);
+  const item = getItemByEquipId(gameState.equippedItems[player.uid]);
   if(item?.effect === 'lucky_egg') expGain = Math.floor(expGain * 2.0);
   giveExp(player, expGain);
   addLog(`+${goldGain} gold, +${expGain} EXP`, 'log-exp');
@@ -3048,7 +3098,7 @@ function giveExp(pokemon, amount) {
   if(expShareAmt > 0) {
     gameState.box.forEach(p => {
       if(p === pokemon) return;
-      const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[p.uid]);
+      const item = getItemByEquipId(gameState.equippedItems[p.uid]);
       if(item?.effect === 'exp_share') {
         p.exp += expShareAmt;
         while(p.exp >= p.expToNext && p.level < maxLevelOf(p)) {
@@ -3275,7 +3325,7 @@ function renderPokemonBox() {
     const isFusedAway = !!p._isFusedInto;
     div.className = 'poke-card' + (isMegaRayquaza(p) ? ' mega-card' : isOriginGiratina(p) ? ' origin-card' : isDNAFused(p) ? ' mega-card' : isCrownedZacian(p) || isCrownedZamazenta(p) ? ' origin-card' : cosmic ? ' cosmic-card' : p.isShiny ? ' shiny-card' : '');
     if(isFusedAway) { div.style.cssText += 'opacity:0.35;filter:grayscale(1);pointer-events:none;'; }
-    const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[p.uid]);
+    const equippedItem = getItemByEquipId(gameState.equippedItems[p.uid]);
     const teamIdx = gameState.team.indexOf(p);
     const inParty = teamIdx >= 0;
     const targetLevel = getPullTargetLevel();
@@ -3287,7 +3337,7 @@ function renderPokemonBox() {
       <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" onerror="this.src='${getBattleSprite(p.id, p.isShiny, p.uid)}'">
       <span class="cname">${cosmic ? '<span style="background:linear-gradient(90deg,#00ffff,#bf00ff,#ff00aa,#00ffff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 1.5s linear infinite">COSMIC</span> ' : ''}${p.name}</span>
       <span class="clevel">Lv.${p.level}</span>
-      ${p.ivs ? (() => { const avg = Math.round(Object.values(p.ivs).reduce((a,b)=>a+b,0)/6); const g = getStatGrade(avg); const isMega = isMegaRayquaza(p); const isOrigin = isOriginGiratina(p); const isFused = isDNAFused(p); const isCrownedForm = isCrownedZacian(p) || isCrownedZamazenta(p); const hasSSStat = (isMega||isOrigin||isFused||p._naturalSSS||isCrownedForm||p._sssUsed||p._isEnvy) && Object.values(p.ivs).some(iv=>iv>=31); if(hasSSStat) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px;animation:shimmer 0.8s linear infinite">SSS</span>`; if(g.isSS) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px">SS</span>`; return `<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${g.color}">${g.label}</span>`; })() : ''}
+      ${p.ivs ? (() => { const avg = Math.round(Object.values(p.ivs).reduce((a,b)=>a+b,0)/6); const g = getStatGrade(avg); const isMega = isMegaRayquaza(p); const isOrigin = isOriginGiratina(p); const isFused = isDNAFused(p); const isCrownedForm = isCrownedZacian(p) || isCrownedZamazenta(p); const isMegaStart = isMegaSceptile(p)||isMegaSwampert(p)||isMegaBlaziken(p); const hasSSStat = (isMega||isOrigin||isFused||p._naturalSSS||isCrownedForm||p._sssUsed||p._isEnvy||isMegaStart) && Object.values(p.ivs).some(iv=>iv>=31); if(hasSSStat) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px;animation:shimmer 0.8s linear infinite">SSS</span>`; if(g.isSS) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px">SS</span>`; return `<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${g.color}">${g.label}</span>`; })() : ''}
       ${equippedItem ? `<div style="font-size:16px">${equippedItem.emoji}</div>` : ''}
       <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:3px">
         ${p.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]};font-size:10px">${t}</span>`).join('')}
@@ -3332,9 +3382,31 @@ function renderItems() {
   const grid = document.getElementById('item-grid');
   grid.innerHTML = '';
   const allItems = ITEMS.concat(EPIC_ITEMS);
+  const STONE_BASE_IDS = new Set(['sceptilite','swampertite','blazikenite']);
+  let hasAny = false;
+
   allItems.forEach(item => {
     const count = gameState.inventory[item.id] || 0;
+    const isStoneBase = STONE_BASE_IDS.has(item.id);
+
+    // For stone base IDs, only show if old (non-instanced) copies exist
+    if(isStoneBase) {
+      if(count > 0) {
+        hasAny = true;
+        const div = document.createElement('div');
+        div.className = 'item-cell';
+        div.title = `${item.name}: ${item.desc}`;
+        div.style.border = '1px solid #4a6a4a';
+        div.innerHTML = `${item.emoji}<span class="item-count">×${count}</span>`;
+        div.onclick = () => showItemModal(item);
+        div.oncontextmenu = (e) => { e.preventDefault(); trashItem(item.id); };
+        grid.appendChild(div);
+      }
+      return;
+    }
+
     if(count === 0) return;
+    hasAny = true;
     const div = document.createElement('div');
     div.className = 'item-cell';
     div.title = `${item.name}: ${item.desc}`;
@@ -3345,7 +3417,30 @@ function renderItems() {
     div.oncontextmenu = (e) => { e.preventDefault(); trashItem(item.id); };
     grid.appendChild(div);
   });
-  if(!allItems.some(i=>(gameState.inventory[i.id]||0)>0)) {
+
+  // Render each unique stone instance separately
+  if(gameState.megaStoneInstances) {
+    const STONE_INFO = { sceptilite:{emoji:'💚',name:'Sceptilite'}, swampertite:{emoji:'💙',name:'Swampertite'}, blazikenite:{emoji:'🔥',name:'Blazikenite'} };
+    const STAT_LABELS = {'attack':'Atk','special-attack':'Sp.Atk','defense':'Def','special-defense':'Sp.Def','speed':'Speed'};
+    Object.entries(gameState.megaStoneInstances).forEach(([instanceId, data]) => {
+      if((gameState.inventory[instanceId] || 0) === 0) return;
+      hasAny = true;
+      const info = STONE_INFO[data.base];
+      if(!info) return;
+      const bonusLabel = `+${Math.round(data.pct*100)}% ${STAT_LABELS[data.stat]||data.stat}`;
+      const div = document.createElement('div');
+      div.className = 'item-cell';
+      div.style.border = '1px solid #00e676';
+      div.style.position = 'relative';
+      div.title = `${info.name}: Triggers Mega Evolution. Bonus: ${bonusLabel}`;
+      div.innerHTML = `${info.emoji}<span style="position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;color:#69f0ae;line-height:1.1">${bonusLabel}</span>`;
+      div.onclick = () => showMegaStoneInstanceModal(instanceId);
+      div.oncontextmenu = (e) => { e.preventDefault(); trashMegaStoneInstance(instanceId); };
+      grid.appendChild(div);
+    });
+  }
+
+  if(!hasAny) {
     grid.innerHTML = '<div style="color:var(--text2);font-size:13px;grid-column:1/-1">No items yet! Use Item Gacha.</div>';
   }
 }
@@ -4123,16 +4218,29 @@ async function doPremiumItemGacha() {
   for(let i = 0; i < 10; i++) {
     const roll = Math.random();
     let item, tier;
-    if(roll < 0.01)       { item = sceptilite;  tier = 'mega';   }
-    else if(roll < 0.02)  { item = swampertite; tier = 'mega';   }
-    else if(roll < 0.03)  { item = blazikenite; tier = 'mega';   }
-    else if(roll < 0.04)  { item = sssCandy;   tier = 'sss';    }
-    else if(roll < 0.09)  { item = maxCandy;   tier = 'epic';   }
-    else if(roll < 0.33)  { item = epicPool[Math.floor(Math.random()*epicPool.length)]; tier = 'epic'; }
-    else if(roll < 0.63)  { item = rareCandy;  tier = 'candy';  }
-    else                  { item = ITEMS[Math.floor(Math.random()*ITEMS.length)]; tier = 'normal'; }
-    gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
-    gotten.push({...item, tier});
+    if(roll < 0.007)       { item = sceptilite;  tier = 'mega';   }
+    else if(roll < 0.014)  { item = swampertite; tier = 'mega';   }
+    else if(roll < 0.021)  { item = blazikenite; tier = 'mega';   }
+    else if(roll < 0.028)  { item = sssCandy;   tier = 'sss';    }
+    else if(roll < 0.078)  { item = maxCandy;   tier = 'epic';   }
+    else if(roll < 0.33)   { item = epicPool[Math.floor(Math.random()*epicPool.length)]; tier = 'epic'; }
+    else if(roll < 0.63)   { item = rareCandy;  tier = 'candy';  }
+    else                   { item = ITEMS[Math.floor(Math.random()*ITEMS.length)]; tier = 'normal'; }
+
+    if(tier === 'mega') {
+      // Each mega stone gets a unique instance ID with a pre-rolled bonus stat
+      const BONUS_STATS = ['attack','special-attack','defense','special-defense','speed'];
+      const bonusStat = BONUS_STATS[Math.floor(Math.random()*BONUS_STATS.length)];
+      const bonusPct  = +(0.04 + Math.random() * 0.06).toFixed(3); // 4–10%
+      const instanceId = item.id + '_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+      if(!gameState.megaStoneInstances) gameState.megaStoneInstances = {};
+      gameState.megaStoneInstances[instanceId] = { base: item.id, stat: bonusStat, pct: bonusPct };
+      gameState.inventory[instanceId] = 1;
+      gotten.push({...item, id: instanceId, tier, _bonusStat: bonusStat, _bonusPct: bonusPct, _instanceId: instanceId});
+    } else {
+      gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
+      gotten.push({...item, tier});
+    }
   }
   renderAll();
 
@@ -4145,7 +4253,7 @@ async function doPremiumItemGacha() {
       ${gotten.map(it => `<div style="text-align:center;background:${bg[it.tier]};border:1px solid ${bdr[it.tier]};border-radius:8px;padding:10px;width:90px">
         <div style="font-size:34px">${it.emoji}</div>
         <div style="font-family:'Press Start 2P';font-size:5px;color:${clr[it.tier]};margin-top:4px">${it.name}</div>
-        ${it.tier==='sss'?'<div style="font-size:10px;color:#ffd700;margin-top:2px">SSS CANDY!</div>':it.tier==='mega'?'<div style="font-size:10px;color:#00e676;margin-top:2px">MEGA STONE!</div>':it.tier==='epic'?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
+        ${it.tier==='sss'?'<div style="font-size:10px;color:#ffd700;margin-top:2px">SSS CANDY!</div>':it.tier==='mega'?`<div style="font-size:10px;color:#00e676;margin-top:2px">MEGA STONE!</div>${it._bonusStat?`<div style="font-size:9px;color:#b9f6ca;margin-top:1px">+${Math.round(it._bonusPct*100)}% ${it._bonusStat.replace('special-attack','Sp.Atk').replace('special-defense','Sp.Def')}</div>`:''}`:it.tier==='epic'?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
       </div>`).join('')}
     </div>
     <button class="btn" onclick="closeModal()" style="width:100%;margin-top:12px">Nice haul!</button>
@@ -4364,7 +4472,7 @@ function showGachaResultMulti(pulls) {
 
 function showPokemonModal(pk) {
   const maxHp = getMaxHp(pk);
-  const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[pk.uid]);
+  const equippedItem = getItemByEquipId(gameState.equippedItems[pk.uid]);
   const evo = EVOLUTIONS[pk.id];
   const inTeam = gameState.team.includes(pk);
   const cosmic = isCosmic(pk);
@@ -4442,7 +4550,7 @@ function rollHighStats(uid) {
 
 function showPokemonInfoCard(pk) {
   const maxHp = getMaxHp(pk);
-  const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[pk.uid]);
+  const equippedItem = getItemByEquipId(gameState.equippedItems[pk.uid]);
   const evo = EVOLUTIONS[pk.id];
   const cosmic = isCosmic(pk);
 
@@ -4599,7 +4707,7 @@ function showItemModal(item) {
     <div class="poke-box">
       ${gameState.box.map(p=>{
         const eq = gameState.equippedItems[p.uid];
-        const eqItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===eq);
+        const eqItem = getItemByEquipId(eq);
         return `<div class="poke-card" onclick="equipItem('${item.id}',${p.uid});closeModal()" style="cursor:pointer">
           <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" width="52" height="52">
           <span class="cname">${p.name}</span>
@@ -4610,6 +4718,54 @@ function showItemModal(item) {
     </div>
   `;
   openModal();
+}
+
+function showMegaStoneInstanceModal(instanceId) {
+  const data = gameState.megaStoneInstances && gameState.megaStoneInstances[instanceId];
+  if(!data || (gameState.inventory[instanceId]||0) === 0) return;
+  const STONE_INFO = { sceptilite:{emoji:'💚',name:'Sceptilite',pokeName:'Sceptile',pokeId:254}, swampertite:{emoji:'💙',name:'Swampertite',pokeName:'Swampert',pokeId:260}, blazikenite:{emoji:'🔥',name:'Blazikenite',pokeName:'Blaziken',pokeId:257} };
+  const STAT_LABELS = {'attack':'Attack','special-attack':'Sp. Attack','defense':'Defense','special-defense':'Sp. Defense','speed':'Speed'};
+  const info = STONE_INFO[data.base];
+  if(!info) return;
+  const bonusLabel = `+${Math.round(data.pct*100)}% ${STAT_LABELS[data.stat]||data.stat}`;
+  document.getElementById('modal-title').textContent = `${info.emoji} ${info.name}`;
+  document.getElementById('modal-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:52px;margin-bottom:6px">${info.emoji}</div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:8px">Triggers Mega Evolution on ${info.pokeName}.</div>
+      <div style="background:rgba(0,230,118,0.12);border:1px solid #00e676;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:inline-block">
+        <div style="font-family:'Press Start 2P';font-size:7px;color:#00e676;margin-bottom:2px">BONUS STAT ROLL</div>
+        <div style="font-size:18px;color:#69f0ae">${bonusLabel}</div>
+      </div>
+    </div>
+    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--text2);margin-bottom:8px">EQUIP TO:</div>
+    <div class="poke-box">
+      ${gameState.box.filter(p=>p.id===info.pokeId).map(p=>{
+        const eq = gameState.equippedItems[p.uid];
+        const eqItem = getItemByEquipId(eq);
+        return `<div class="poke-card" onclick="equipItem('${instanceId}',${p.uid});closeModal()" style="cursor:pointer">
+          <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" width="52" height="52">
+          <span class="cname">${p.name}</span>
+          <span class="clevel">Lv.${p.level}</span>
+          ${eq ? `<div style="font-size:13px">${eqItem?.emoji||''}</div>` : ''}
+        </div>`;
+      }).join('') || `<div style="color:var(--text2);font-size:14px;padding:10px">No ${info.pokeName} in your box!</div>`}
+    </div>
+    <button class="btn" style="border-color:#ef5350;color:#ef5350;width:100%;margin-top:10px" onclick="trashMegaStoneInstance('${instanceId}');closeModal()">🗑️ Discard Stone</button>
+  `;
+  openModal();
+}
+
+function trashMegaStoneInstance(instanceId) {
+  if(!gameState.megaStoneInstances || !gameState.megaStoneInstances[instanceId]) return;
+  const data = gameState.megaStoneInstances[instanceId];
+  const STONE_INFO = { sceptilite:{name:'Sceptilite'}, swampertite:{name:'Swampertite'}, blazikenite:{name:'Blazikenite'} };
+  const name = STONE_INFO[data.base]?.name || 'Mega Stone';
+  delete gameState.inventory[instanceId];
+  delete gameState.megaStoneInstances[instanceId];
+  toast(`🗑️ Discarded ${name}`, 2000);
+  renderItems();
+  saveGame();
 }
 
 function getPullTargetLevel() {
@@ -4733,9 +4889,12 @@ function equipItem(itemId, uid) {
   if(!(gameState.inventory[itemId]>0)) { toast('No more of that item!'); return; }
   const pokemon = gameState.box.find(p=>p.uid===uid);
 
+  // Resolve mega stone instance IDs to their base item ID for all checks below
+  const baseItemId = getMegaStoneBaseId(itemId) || itemId;
+
   // Block equipping a form-changing item onto a pokemon that's in any preset
   // (regular items are fine — presets auto-update below)
-  if(FORM_ITEMS.has(itemId)) {
+  if(FORM_ITEMS.has(baseItemId)) {
     const lockedBy = isInAnyPreset(uid);
     if(lockedBy) {
       toast(`🔒 Remove this Pokémon from preset "${lockedBy}" first!`, 3500);
@@ -4744,7 +4903,7 @@ function equipItem(itemId, uid) {
   }
 
   // Meteorite: only Rayquaza can hold it
-  if(itemId === 'meteorite') {
+  if(baseItemId === 'meteorite') {
     if(!pokemon || pokemon.id !== 384) {
       toast('☄️ Meteorite can only be held by Rayquaza!', 3000);
       return;
@@ -4756,7 +4915,7 @@ function equipItem(itemId, uid) {
   }
 
   // Hero's Sword: only Zacian can hold it
-  if(itemId === 'heros_sword') {
+  if(baseItemId === 'heros_sword') {
     if(!pokemon || pokemon.id !== 888) {
       toast("⚔️ Hero's Sword can only be held by Zacian!", 3000);
       return;
@@ -4764,7 +4923,7 @@ function equipItem(itemId, uid) {
   }
 
   // Hero's Shield: only Zamazenta can hold it
-  if(itemId === 'heros_shield') {
+  if(baseItemId === 'heros_shield') {
     if(!pokemon || pokemon.id !== 889) {
       toast("🛡️ Hero's Shield can only be held by Zamazenta!", 3000);
       return;
@@ -4772,7 +4931,7 @@ function equipItem(itemId, uid) {
   }
 
   // Sceptilite: only Sceptile; check boss team limit
-  if(itemId === 'sceptilite') {
+  if(baseItemId === 'sceptilite') {
     if(!pokemon || pokemon.id !== 254) {
       toast('💚 Sceptilite can only be held by Sceptile!', 3000);
       return;
@@ -4789,7 +4948,7 @@ function equipItem(itemId, uid) {
   }
 
   // Swampertite: only Swampert; check boss team limit
-  if(itemId === 'swampertite') {
+  if(baseItemId === 'swampertite') {
     if(!pokemon || pokemon.id !== 260) {
       toast('💙 Swampertite can only be held by Swampert!', 3000);
       return;
@@ -4806,7 +4965,7 @@ function equipItem(itemId, uid) {
   }
 
   // Blazikenite: only Blaziken; check boss team limit
-  if(itemId === 'blazikenite') {
+  if(baseItemId === 'blazikenite') {
     if(!pokemon || pokemon.id !== 257) {
       toast('🔥 Blazikenite can only be held by Blaziken!', 3000);
       return;
@@ -4925,21 +5084,26 @@ function equipItem(itemId, uid) {
   if(old) gameState.inventory[old] = (gameState.inventory[old]||0) + 1;
   gameState.equippedItems[uid] = itemId;
   gameState.inventory[itemId]--;
-  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===itemId);
-  if(itemId === 'meteorite' && pokemon?.id === 384) {
+  // Attach pre-rolled stone bonus from instance (new stones) or clear it (old base-id stones)
+  if(['sceptilite','swampertite','blazikenite'].includes(baseItemId)) {
+    const instanceData = gameState.megaStoneInstances && gameState.megaStoneInstances[itemId];
+    pokemon._megaStoneBonus = instanceData ? { stat: instanceData.stat, pct: instanceData.pct } : null;
+  }
+  const item = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===baseItemId);
+  if(baseItemId === 'meteorite' && pokemon?.id === 384) {
     toast(`☄️ ${pokemon.name} has Mega Evolved into MEGA RAYQUAZA! 🌈`, 4000);
-  } else if(itemId === 'sceptilite' && pokemon?.id === 254) {
+  } else if(baseItemId === 'sceptilite' && pokemon?.id === 254) {
     toast(`💚 ${pokemon.name} has Mega Evolved into MEGA SCEPTILE! 🌿`, 4000);
-  } else if(itemId === 'swampertite' && pokemon?.id === 260) {
+  } else if(baseItemId === 'swampertite' && pokemon?.id === 260) {
     toast(`💙 ${pokemon.name} has Mega Evolved into MEGA SWAMPERT! 💧`, 4000);
-  } else if(itemId === 'blazikenite' && pokemon?.id === 257) {
+  } else if(baseItemId === 'blazikenite' && pokemon?.id === 257) {
     toast(`🔥 ${pokemon.name} has Mega Evolved into MEGA BLAZIKEN! 🦅`, 4000);
-  } else if(itemId === 'heros_sword' && pokemon?.id === 888) {
+  } else if(baseItemId === 'heros_sword' && pokemon?.id === 888) {
     toast(`⚔️ Zacian has transformed into CROWNED ZACIAN! 👑`, 4000);
-  } else if(itemId === 'heros_shield' && pokemon?.id === 889) {
+  } else if(baseItemId === 'heros_shield' && pokemon?.id === 889) {
     toast(`🛡️ Zamazenta has transformed into CROWNED ZAMAZENTA! 👑`, 4000);
   } else {
-    toast(`${item.emoji} ${item.name} equipped to ${pokemon?.name||'Pokémon'}!`);
+    toast(`${item?.emoji||'✨'} ${item?.name||itemId} equipped to ${pokemon?.name||'Pokémon'}!`);
   }
   // Auto-update any presets that contain this pokemon so they reflect the new item
   updatePresetsForPokemon(uid, itemId);
@@ -4990,9 +5154,10 @@ function performDNAFusion(kyuremUid, itemId, fuseWithUid) {
 function unequipItem(uid) {
   const old = gameState.equippedItems[uid];
   if(!old) return;
+  const baseOld = getMegaStoneBaseId(old) || old;
 
   // Block unequipping form-changing items if this pokemon is saved in a preset
-  if(FORM_ITEMS.has(old)) {
+  if(FORM_ITEMS.has(baseOld)) {
     const lockedBy = isFormLockedByPreset(uid);
     if(lockedBy) {
       toast(`🔒 Remove this Pokémon from preset "${lockedBy}" first!`, 3500);
@@ -5028,6 +5193,9 @@ function unequipItem(uid) {
 
   gameState.inventory[old] = (gameState.inventory[old]||0) + 1;
   delete gameState.equippedItems[uid];
+  // Clear mega stone bonus from pokemon
+  const pk = gameState.box.find(p=>p.uid===uid);
+  if(pk && ['sceptilite','swampertite','blazikenite'].includes(baseOld)) pk._megaStoneBonus = null;
   // Auto-update any presets that contain this pokemon (item cleared)
   updatePresetsForPokemon(uid, null);
   toast('Item unequipped!');
@@ -5166,7 +5334,7 @@ function showAddToTeamPicker() {
 
   const rows = available.map(p => {
     const cosmic = isCosmic(p);
-    const equippedItem = ITEMS.concat(EPIC_ITEMS).find(i=>i.id===gameState.equippedItems[p.uid]);
+    const equippedItem = getItemByEquipId(gameState.equippedItems[p.uid]);
     const nameHtml = p._isEnvy
       ? `<span class="void-text" style="font-size:9px">ENVY</span>`
       : `<span style="color:${cosmic?'#00ffff':p.isShiny?'#ff69b4':'var(--gold)'}">${p.name}</span>`;
