@@ -6123,7 +6123,7 @@ function trashItem(itemId) {
       <div style="color:var(--text2);margin-bottom:8px">${item.desc}</div>
       <div style="margin-bottom:14px">You have ×${count}.</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeOverlay()">🔄 Trade</button>
+        ${ONLINE_UNTRADABLE.has(itemId) ? '' : `<button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeForItem('${itemId}')">🔄 Trade</button>`}
         <button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',1)">🗑️ Trash ×1</button>
         ${count>1?`<button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',${count})">🗑️ Trash all ×${count}</button>`:''}
         <button class="btn gold" onclick="closeModal()">Cancel</button>
@@ -6930,6 +6930,16 @@ function decodePokemonTrade(code) {
 function openTradeOverlay() {
   document.getElementById('trade-overlay').classList.add('active');
   renderOnlineTradeMenu();
+}
+
+function openTradeForPokemon(uid) {
+  document.getElementById('trade-overlay').classList.add('active');
+  showOnlineTradeConfirm(uid);
+}
+
+function openTradeForItem(itemId) {
+  document.getElementById('trade-overlay').classList.add('active');
+  showOnlineItemAmountPicker(itemId);
 }
 
 function closeTradeOverlay() {
