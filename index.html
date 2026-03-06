@@ -2302,7 +2302,7 @@ function getEffectiveStat(stat, pokemon, statName) {
     if(pokemon._sssUsed && pokemon._sssStat === statName) val = Math.floor(val * 1.4); // SSS Candy (+40% on one stat)
     if(item.effect === 'origin_orb' && pokemon.id === 487) val = Math.floor(val * 2.0); // Origin Giratina: SSS = 2x all stats
     // Perfected Zygarde: SSS stats, balanced — strong but not top-tier with held item
-    if(isPerfectedZygarde(pokemon)) val = Math.floor(val * 1.9);
+    if(isPerfectedZygarde(pokemon)) val = Math.floor(val * 2.2);
     if(item.effect === 'dna_splicer' && isDNAFused(pokemon)) {
       if(isBlackKyurem(pokemon)) {
         if(statName === 'attack' || statName === 'special-attack') val = Math.floor(val * 1.5);
@@ -2367,7 +2367,7 @@ function getMaxHp(pokemon) {
   if(pokemon._isEnvy) hp = Math.floor(hp * 1.2); // Envy: modest HP boost
   if(pokemon._naturalSSS) hp = Math.floor(hp * 2.0); // Natural SSS (e.g. Hero Greninja)
   if(item?.effect === 'origin_orb' && pokemon.id === 487) hp = Math.floor(hp * 2.0); // Origin Giratina
-  if(isPerfectedZygarde(pokemon)) hp = Math.floor(hp * 1.9); // Perfected Zygarde
+  if(isPerfectedZygarde(pokemon)) hp = Math.floor(hp * 2.2); // Perfected Zygarde
   if(item?.effect === 'dna_splicer' && isDNAFused(pokemon)) {
     if(isBlackKyurem(pokemon)) hp = Math.floor(hp * 3.0);
     else if(isWhiteKyurem(pokemon)) hp = Math.floor(hp * 1.4);
@@ -7845,11 +7845,13 @@ function renderOnlineTradeMenu() {
       <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:4px">🌐 ONLINE TRADE</div>
       <div style="font-size:13px;color:var(--text2)">Trade with anyone worldwide using a short 6-character code.<br>Codes expire in <b style="color:#ffd700">5 minutes</b>.</div>
     </div>
-    <div style="display:flex;gap:8px;margin-bottom:10px">
-      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showOnlinePostTrade()">📤 Post Trade</button>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showOnlinePostTrade()">🐾 Post Pokémon</button>
+      <button class="btn" style="flex:1;border-color:#ff9e40;color:#ff9e40;font-size:16px" onclick="showOnlinePostItem()">🎒 Post Item</button>
+    </div>
+    <div style="display:flex;gap:8px">
       <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showOnlineReceiveTrade()">📥 Enter Code</button>
     </div>
-
   `;
 }
 
@@ -8063,11 +8065,10 @@ function showOnlineTradePreview(code, result) {
   clearOnlineCountdown();
   const payload = result.payload;
   const expiresAt = result.expiresAt;
-  let pk = null;
   let previewHtml = '';
 
   if (payload.type === 'pokemon') {
-    pk = decodePokemonTrade(payload.data);
+    const pk = decodePokemonTrade(payload.data);
     if (pk) {
       const cosmic = isCosmic(pk);
       previewHtml = `
@@ -8079,6 +8080,20 @@ function showOnlineTradePreview(code, result) {
             <div style="font-size:14px;color:var(--text2)">Lv.${pk.level}</div>
             <div style="font-size:13px;color:var(--text2)">OT: ${pk.ot||'Unknown'}</div>
             <div style="font-size:13px">${(pk.types||[]).map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+          </div>
+        </div>`;
+    }
+  } else if (payload.type === 'item') {
+    const allItems = ITEMS.concat(EPIC_ITEMS);
+    const item = allItems.find(i => i.id === payload.itemId);
+    if (item) {
+      previewHtml = `
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(255,150,0,0.06);border:1px solid rgba(255,150,0,0.25);border-radius:8px;padding:12px">
+          <span style="font-size:52px">${item.emoji}</span>
+          <div>
+            <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${item.name}</div>
+            <div style="font-size:16px;color:#ff9e40;margin-top:4px">×${payload.amount}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px">${item.desc||''}</div>
           </div>
         </div>`;
     }
@@ -8100,7 +8115,6 @@ function showOnlineTradePreview(code, result) {
       <button class="btn" style="flex:1" onclick="showOnlineReceiveTrade()">← Back</button>
     </div>`;
 
-  // Countdown for preview
   const tick = () => {
     const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
     const el = document.getElementById('online-trade-timer');
@@ -8174,6 +8188,21 @@ async function acceptOnlineTrade(code) {
           <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
         </div>`;
       toast(`✅ Trade claimed! ${pk.name} added to your box!`, 5000);
+    } else if (payload.type === 'item') {
+      const allItems = ITEMS.concat(EPIC_ITEMS);
+      const item = allItems.find(i => i.id === payload.itemId);
+      if (!item) { toast('❌ Unknown item in trade!', 3000); renderOnlineTradeMenu(); return; }
+      const amount = Math.max(1, Math.floor(payload.amount) || 1);
+      gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + amount;
+      renderAll(); saveGame();
+      document.getElementById('trade-content').innerHTML = `
+        <div style="text-align:center;padding:16px">
+          <div style="font-size:64px;margin-bottom:8px">${item.emoji}</div>
+          <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:6px">×${amount} ${item.name} received!</div>
+          <div style="font-size:14px;color:var(--text2);margin-top:6px">${item.desc||''}</div>
+          <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
+        </div>`;
+      toast(`✅ Trade claimed! ×${amount} ${item.name} added!`, 5000);
     } else {
       toast('✅ Trade claimed!', 4000);
       renderOnlineTradeMenu();
@@ -8193,6 +8222,151 @@ async function acceptOnlineTrade(code) {
     document.head.appendChild(s);
   }
 })();
+
+// ── POST ITEM TRADE ───────────────────────────────────────────
+
+const ONLINE_UNTRADABLE = new Set(['rare_candy','max_candy','sss_candy']);
+
+function showOnlinePostItem() {
+  clearOnlineCountdown();
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const owned = allItems.filter(it => (gameState.inventory[it.id]||0) > 0 && !ONLINE_UNTRADABLE.has(it.id));
+  if (owned.length === 0) {
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text2)">You have no tradable items!</div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+    return;
+  }
+  let html = `<div style="font-family:'Press Start 2P';font-size:8px;color:#ff9e40;margin-bottom:10px">🎒 PICK ITEM TO POST</div>
+    <div style="max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">`;
+  owned.forEach(it => {
+    const count = gameState.inventory[it.id] || 0;
+    html += `<div onclick="showOnlineItemAmountPicker('${it.id}')"
+      style="cursor:pointer;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);
+             border:1px solid var(--border);border-radius:8px;padding:8px 12px;transition:background 0.15s"
+      onmouseover="this.style.background='rgba(255,150,0,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+      <span style="font-size:28px">${it.emoji}</span>
+      <div style="flex:1">
+        <div style="font-family:'Press Start 2P';font-size:7px;color:var(--gold)">${it.name}</div>
+        <div style="font-size:13px;color:var(--text2)">×${count} owned</div>
+      </div>
+      <span style="font-size:13px;color:#ff9e40">Post →</span>
+    </div>`;
+  });
+  html += `</div><button class="btn" style="width:100%;margin-top:10px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  document.getElementById('trade-content').innerHTML = html;
+}
+
+function showOnlineItemAmountPicker(itemId) {
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i => i.id === itemId);
+  if (!item) return;
+  const maxOwned = gameState.inventory[itemId] || 0;
+  if (maxOwned <= 0) { toast('No more of that item!'); return; }
+  window._onlineItemId = itemId;
+  window._onlineItemAmt = 1;
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <span style="font-size:52px">${item.emoji}</span>
+      <div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${item.name}</div>
+        <div style="font-size:14px;color:var(--text2)">You own: ×${maxOwned}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;justify-content:center">
+      <button class="btn" style="font-size:20px;padding:4px 14px"
+        onclick="window._onlineItemAmt=Math.max(1,window._onlineItemAmt-1);document.getElementById('online-item-amt').textContent='×'+window._onlineItemAmt">−</button>
+      <span id="online-item-amt" style="font-family:'Press Start 2P';font-size:14px;color:#ff9e40;min-width:48px;text-align:center">×1</span>
+      <button class="btn" style="font-size:20px;padding:4px 14px"
+        onclick="window._onlineItemAmt=Math.min(${maxOwned},window._onlineItemAmt+1);document.getElementById('online-item-amt').textContent='×'+window._onlineItemAmt">+</button>
+      <button class="btn" style="font-size:14px"
+        onclick="window._onlineItemAmt=${maxOwned};document.getElementById('online-item-amt').textContent='×${maxOwned}'">Max</button>
+    </div>
+    <div style="background:rgba(255,150,0,0.08);border:1px solid rgba(255,150,0,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
+      Items are <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#ff9e40;color:#ff9e40;font-size:16px" onclick="confirmOnlineItemPost()">✅ Post Item</button>
+      <button class="btn" style="flex:1" onclick="showOnlinePostItem()">← Back</button>
+    </div>`;
+}
+
+async function confirmOnlineItemPost() {
+  const itemId = window._onlineItemId;
+  const amount = window._onlineItemAmt || 1;
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i => i.id === itemId);
+  if (!item) { toast('Item not found!', 2000); return; }
+  const owned = gameState.inventory[itemId] || 0;
+  if (owned < amount) { toast('Not enough items!', 2000); return; }
+
+  // Remove items immediately
+  gameState.inventory[itemId] = owned - amount;
+  if (gameState.inventory[itemId] <= 0) delete gameState.inventory[itemId];
+  renderAll(); saveGame();
+  window._onlineItemId = null;
+  window._onlineItemAmt = null;
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
+      <div style="font-size:16px;color:var(--text2)">Posting item trade…</div>
+    </div>`;
+
+  try {
+    const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'item', itemId, amount, trainerName: gameState.trainerName || 'Trainer' }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    showOnlineItemCodeDisplay(result.code, result.expiresAt, item, amount);
+  } catch (e) {
+    // Return items to inventory on failure
+    gameState.inventory[itemId] = (gameState.inventory[itemId] || 0) + amount;
+    renderAll(); saveGame();
+    toast('❌ Could not reach trade server. Items returned!', 4000);
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:#ef5350">
+        <div style="font-size:32px;margin-bottom:8px">❌</div>
+        Could not reach the trade server.<br><br>
+        <span style="font-size:13px;color:var(--text2)">×${amount} ${item.name} returned to your inventory.</span>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  }
+}
+
+function showOnlineItemCodeDisplay(code, expiresAt, item, amount) {
+  clearOnlineCountdown();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:64px">${item.emoji}</div>
+      <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold);margin-top:6px">×${amount} ${item.name} posted!</div>
+    </div>
+    <div style="background:rgba(255,150,0,0.1);border:2px solid #ff9e40;border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Share this code with your trade partner:</div>
+      <div style="font-family:'Press Start 2P';font-size:22px;color:#ff9e40;letter-spacing:6px;margin-bottom:10px">${code}</div>
+      <button class="btn" style="border-color:#ff9e40;color:#ff9e40;font-size:15px" onclick="copyOnlineCode('${code}')">📋 Copy Code</button>
+    </div>
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--text2)">Expires in: </span>
+      <span id="online-trade-timer" style="font-family:'Press Start 2P';font-size:12px;color:#ffd700">5:00</span>
+    </div>
+    <div style="font-size:12px;color:#555;text-align:center">Once claimed the code becomes invalid automatically.</div>`;
+
+  const tick = () => {
+    const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    const el = document.getElementById('online-trade-timer');
+    if (!el) { clearOnlineCountdown(); return; }
+    el.textContent = fmtSeconds(remaining);
+    if (remaining <= 60) el.style.color = '#ef5350';
+    if (remaining === 0) { clearOnlineCountdown(); toast('⏰ Trade code expired!', 4000); el.textContent = 'EXPIRED'; }
+  };
+  tick();
+  _onlineTradeCountdownInterval = setInterval(tick, 1000);
+}
 
 // ============================================================
 // END ONLINE TRADE SYSTEM
