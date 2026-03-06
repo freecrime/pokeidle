@@ -1400,11 +1400,7 @@ body::before {
 <!-- TRADE OVERLAY -->
 <div id="trade-overlay">
   <div class="trade-box">
-    <div style="font-family:'Press Start 2P';font-size:10px;color:#69f0ae;text-align:center;margin-bottom:10px">🔄 TRADING POST</div>
-    <div style="display:flex;gap:6px;margin-bottom:12px">
-      <button id="trade-tab-pokemon" class="btn" style="flex:1;font-size:15px;border-color:#69f0ae;color:#69f0ae;background:rgba(0,200,83,0.15)" onclick="switchTradeTab('pokemon')">🐾 Pokémon</button>
-      <button id="trade-tab-item" class="btn" style="flex:1;font-size:15px;border-color:#3a3a6a;color:var(--text2)" onclick="switchTradeTab('item')">🎒 Items</button>
-    </div>
+    <div style="font-family:'Press Start 2P';font-size:10px;color:#69f0ae;text-align:center;margin-bottom:14px">🌐 ONLINE TRADING POST</div>
     <div id="trade-content"></div>
     <button class="btn" onclick="closeTradeOverlay()" style="width:100%;margin-top:10px;font-size:18px">Close</button>
   </div>
@@ -6127,7 +6123,7 @@ function trashItem(itemId) {
       <div style="color:var(--text2);margin-bottom:8px">${item.desc}</div>
       <div style="margin-bottom:14px">You have ×${count}.</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeOverlay();switchTradeTab('item');showItemTradeCode('${itemId}')">🔄 Trade</button>
+        <button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeOverlay()">🔄 Trade</button>
         <button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',1)">🗑️ Trash ×1</button>
         ${count>1?`<button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',${count})">🗑️ Trash all ×${count}</button>`:''}
         <button class="btn gold" onclick="closeModal()">Cancel</button>
@@ -6933,355 +6929,23 @@ function decodePokemonTrade(code) {
 
 function openTradeOverlay() {
   document.getElementById('trade-overlay').classList.add('active');
-  renderTradeMenu();
-  switchTradeTab('pokemon');
+  renderOnlineTradeMenu();
 }
 
 function closeTradeOverlay() {
   document.getElementById('trade-overlay').classList.remove('active');
+  clearOnlineCountdown();
 }
 
 function switchTradeTab(tab) {
-  const tabs = ['pokemon','item'];
-  tabs.forEach(t => {
-    const btn = document.getElementById('trade-tab-'+t);
-    if(!btn) return;
-    if(t === tab) {
-      btn.style.borderColor = '#69f0ae'; btn.style.color = '#69f0ae'; btn.style.background = 'rgba(0,200,83,0.15)';
-    } else {
-      btn.style.borderColor = '#3a3a6a'; btn.style.color = 'var(--text2)'; btn.style.background = '';
-    }
-  });
-  if(tab === 'pokemon') renderTradeMenuPokemon();
-  else renderTradeMenuItems();
+  // Tabs removed — all trades go through online now
+  renderOnlineTradeMenu();
 }
 
 function renderTradeMenu() {
-  renderTradeMenuPokemon();
+  renderOnlineTradeMenu();
 }
 
-function renderTradeMenuPokemon() {
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showTradePickPokemon()">📤 Send Trade</button>
-      <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showTradeReceive()">📥 Receive Trade</button>
-    </div>
-    <div style="font-size:13px;color:var(--text2);text-align:center">Share a Trade Code with another player!<br>Use base64 codes to transfer Pokémon.</div>
-  `;
-}
-
-function renderTradeMenuItems() {
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;gap:8px;margin-bottom:14px">
-      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showTradePickItem()">📤 Send Item</button>
-      <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showItemTradeReceive()">📥 Receive Item</button>
-    </div>
-    <div style="font-size:13px;color:var(--text2);text-align:center">Trade items with another player!<br>Use base64 codes to transfer items.</div>
-  `;
-}
-
-function encodeItemTrade(itemId, amount) {
-  const payload = JSON.stringify({ itemId, amount, v: 1 });
-  return 'ITM_' + btoa(unescape(encodeURIComponent(payload)));
-}
-
-function decodeItemTrade(code) {
-  try {
-    if(!code.startsWith('ITM_')) return null;
-    const json = decodeURIComponent(escape(atob(code.slice(4))));
-    return JSON.parse(json);
-  } catch(e) { return null; }
-}
-
-function showTradePickItem() {
-  const allItems = ITEMS.concat(EPIC_ITEMS);
-  const UNTRADABLE = new Set(['rare_candy','max_candy','sss_candy']);
-  const owned = allItems.filter(it => (gameState.inventory[it.id]||0) > 0 && !UNTRADABLE.has(it.id));
-  if(owned.length === 0) { document.getElementById('trade-content').innerHTML = `<div style="text-align:center;padding:20px;color:var(--text2)">You have no items to trade!</div><button class="btn" style="width:100%;margin-top:8px" onclick="renderTradeMenuItems()">← Back</button>`; return; }
-  let html = `<div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:10px">PICK ITEM TO TRADE</div>
-    <div style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">`;
-  owned.forEach(it => {
-    const count = gameState.inventory[it.id]||0;
-    html += `<div onclick="showItemTradeCode('${it.id}')" style="cursor:pointer;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:8px 12px;transition:background 0.15s" onmouseover="this.style.background='rgba(0,200,83,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
-      <span style="font-size:28px">${it.emoji}</span>
-      <div style="flex:1">
-        <div style="font-family:'Press Start 2P';font-size:7px;color:var(--gold)">${it.name}</div>
-        <div style="font-size:13px;color:var(--text2)">×${count} owned</div>
-      </div>
-      <span style="font-size:13px;color:#69f0ae">Trade →</span>
-    </div>`;
-  });
-  html += `</div><button class="btn" style="width:100%;margin-top:10px" onclick="renderTradeMenuItems()">← Back</button>`;
-  document.getElementById('trade-content').innerHTML = html;
-}
-
-function showItemTradeCode(itemId) {
-  const UNTRADABLE = new Set(['rare_candy','max_candy','sss_candy']);
-  if(UNTRADABLE.has(itemId)) { toast("Candies can't be traded!", 2500); return; }
-  const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===itemId);
-  if(!item) return;
-  const maxOwned = gameState.inventory[itemId]||0;
-  if(maxOwned <= 0) { toast('No more of that item!'); return; }
-
-  window._pendingItemTradeId = itemId;
-  window._pendingItemTradeAmt = 1;
-
-  const renderControls = () => {
-    const amt = window._pendingItemTradeAmt;
-    document.getElementById('item-trade-amt-display').textContent = `×${amt}`;
-  };
-
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-      <span style="font-size:52px">${item.emoji}</span>
-      <div>
-        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${item.name}</div>
-        <div style="font-size:14px;color:var(--text2)">You own: ×${maxOwned}</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;justify-content:center">
-      <button class="btn" style="font-size:20px;padding:4px 14px" onclick="window._pendingItemTradeAmt=Math.max(1,window._pendingItemTradeAmt-1);document.getElementById('item-trade-amt-display').textContent='×'+window._pendingItemTradeAmt">−</button>
-      <span id="item-trade-amt-display" style="font-family:'Press Start 2P';font-size:14px;color:#69f0ae;min-width:48px;text-align:center">×1</span>
-      <button class="btn" style="font-size:20px;padding:4px 14px" onclick="window._pendingItemTradeAmt=Math.min(${maxOwned},window._pendingItemTradeAmt+1);document.getElementById('item-trade-amt-display').textContent='×'+window._pendingItemTradeAmt">+</button>
-      <button class="btn" style="font-size:14px" onclick="window._pendingItemTradeAmt=${maxOwned};document.getElementById('item-trade-amt-display').textContent='×${maxOwned}'">Max</button>
-    </div>
-    <div style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
-      Click <b style="color:#ef5350">Confirm Send</b> to remove the items.<br>The code will be <b style="color:#ffd700">copied to your clipboard</b>.
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350;font-size:16px" onclick="confirmSendItemAndCopy()">✅ Confirm Send &amp; Copy</button>
-      <button class="btn" style="flex:1" onclick="showTradePickItem()">← Back</button>
-    </div>
-  `;
-}
-
-function confirmSendItemAndCopy() {
-  const itemId = window._pendingItemTradeId;
-  const amount = window._pendingItemTradeAmt || 1;
-  const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===itemId);
-  if(!item) { toast('Item not found!'); return; }
-  const owned = gameState.inventory[itemId]||0;
-  if(owned < amount) { toast('Not enough items!'); return; }
-  if(!confirm(`Remove ×${amount} ${item.name} from your inventory? Code will be copied.`)) return;
-
-  gameState.inventory[itemId] = owned - amount;
-  if(gameState.inventory[itemId] <= 0) delete gameState.inventory[itemId];
-
-  const code = encodeItemTrade(itemId, amount);
-  window._pendingItemTradeId = null;
-  window._pendingItemTradeAmt = null;
-
-  const doCopy = (text) => {
-    try {
-      navigator.clipboard.writeText(text).then(() => {
-        toast(`✅ ×${amount} ${item.name} sent! Code copied 📋`, 4000);
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); ta.remove();
-        toast(`✅ ×${amount} ${item.name} sent! Code copied 📋`, 4000);
-      });
-    } catch(e) { toast(`✅ ×${amount} ${item.name} sent! (Copy failed)`, 4000); }
-  };
-  doCopy(code);
-
-  renderAll(); saveGame();
-  document.getElementById('trade-content').innerHTML = `
-    <div style="text-align:center;padding:16px">
-      <div style="font-size:44px;margin-bottom:8px">${item.emoji}</div>
-      <div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:8px">TRADE CODE COPIED!</div>
-      <div style="font-size:14px;color:var(--text2);margin-bottom:16px">×${amount} ${item.name} removed.<br>Paste the code to the recipient!</div>
-      <button class="btn" style="width:100%" onclick="showTradePickItem()">← Trade Another</button>
-    </div>
-  `;
-}
-
-function showItemTradeReceive() {
-  document.getElementById('trade-content').innerHTML = `
-    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:10px">📥 RECEIVE ITEM</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Paste the item trade code from your partner:</div>
-    <textarea id="item-trade-receive-input" placeholder="Paste item trade code here..." style="width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px;font-family:'VT323',monospace;font-size:16px;resize:none;height:80px"></textarea>
-    <button class="btn" style="width:100%;border-color:#4fc3f7;color:var(--accent);font-size:18px;margin-top:8px" onclick="processItemTradeReceive()">📥 Receive Item!</button>
-    <button class="btn" style="width:100%;margin-top:6px" onclick="renderTradeMenuItems()">← Back</button>
-  `;
-}
-
-function processItemTradeReceive() {
-  const code = document.getElementById('item-trade-receive-input')?.value?.trim();
-  if(!code) { toast('Paste an item trade code first!', 2000); return; }
-  const data = decodeItemTrade(code);
-  if(!data) { toast('❌ Invalid item trade code!', 3000); return; }
-  const allItems = ITEMS.concat(EPIC_ITEMS);
-  const item = allItems.find(i=>i.id===data.itemId);
-  if(!item) { toast('❌ Unknown item in code!', 3000); return; }
-  const amount = Math.max(1, Math.floor(data.amount)||1);
-  gameState.inventory[item.id] = (gameState.inventory[item.id]||0) + amount;
-  renderAll(); saveGame();
-  document.getElementById('trade-content').innerHTML = `
-    <div style="text-align:center;padding:16px">
-      <div style="font-size:52px;margin-bottom:8px">${item.emoji}</div>
-      <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:6px">×${amount} ${item.name} received!</div>
-      <div style="font-size:14px;color:var(--text2);margin-top:6px">${item.desc}</div>
-      <button class="btn" style="width:100%;margin-top:14px" onclick="renderTradeMenuItems()">← Back</button>
-    </div>
-  `;
-  toast(`📥 ×${amount} ${item.name} received!`, 4000);
-}
-
-function openTradeForPokemon(uid) {
-  const pk = gameState.box.find(p=>p.uid===uid);
-  if(!pk) return;
-  openTradeOverlay();
-  showTradeCode(pk);
-}
-
-function showTradePickPokemon() {
-  const sorted = [...gameState.box];
-  let html = `<div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:10px">PICK POKÉMON TO TRADE</div>
-    <div class="poke-box" style="max-height:340px;overflow-y:auto">`;
-  sorted.forEach(p => {
-    const cosmic = isCosmic(p);
-    html += `<div class="poke-card${cosmic?' cosmic-card':p.isShiny?' shiny-card':''}" onclick="showTradeCode_uid(${p.uid})" style="cursor:pointer">
-      ${p.isShiny ? '<div style="position:absolute;top:3px;right:4px;font-size:14px">★</div>' : ''}
-      <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" onerror="this.src='${getBattleSprite(p.id, p.isShiny, p.uid)}'">
-      <span class="cname">${p.name}</span>
-      <span class="clevel">Lv.${p.level}</span>
-    </div>`;
-  });
-  html += `</div>`;
-  document.getElementById('trade-content').innerHTML = html;
-}
-
-function showTradeCode_uid(uid) {
-  const pk = gameState.box.find(p=>p.uid===uid);
-  if(pk) showTradeCode(pk);
-}
-
-function showTradeCode(pk) {
-  const code = encodePokemonTrade(pk);
-  const cosmic = isCosmic(pk);
-  // Store code privately — not shown in DOM as plain text
-  window._pendingTradeCode = code;
-  window._pendingTradeUid = pk.uid;
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="72" height="72" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}" onerror="this.src='${getBattleSprite(pk.id,pk.isShiny)}'">
-      <div>
-        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${cosmic?'🌌 COSMIC ':''}${pk.isShiny?'✨ ':''}${pk.name}</div>
-        <div style="font-size:14px;color:var(--text2)">Lv.${pk.level} · OT: ${pk.ot||'Trainer'}</div>
-        <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
-      </div>
-    </div>
-    <div style="background:rgba(0,200,83,0.08);border:1px solid rgba(0,200,83,0.3);border-radius:8px;padding:12px;margin-bottom:10px;text-align:center">
-      <div style="font-size:15px;color:#69f0ae;margin-bottom:4px">📤 Ready to Send</div>
-      <div style="font-size:13px;color:var(--text2)">Click <b style="color:#ef5350">Confirm Send</b> to remove ${pk.name} from your box.<br>The trade code will be <b style="color:#ffd700">automatically copied</b> to your clipboard so you can share it.</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350;font-size:16px" onclick="confirmSendAndCopy()">✅ Confirm Send &amp; Copy</button>
-      <button class="btn" style="flex:1" onclick="showTradePickPokemon()">← Back</button>
-    </div>
-    <div style="font-size:12px;color:#666;margin-top:8px;text-align:center">⚠️ This removes the Pokémon from your box permanently.</div>
-  `;
-}
-
-function confirmSendAndCopy() {
-  const uid = window._pendingTradeUid;
-  const code = window._pendingTradeCode;
-  if(!uid || !code) { toast('Trade data lost, please try again.', 2500); return; }
-  const pk = gameState.box.find(p=>p.uid===uid);
-  if(!pk) { toast('Pokémon not found!', 2000); return; }
-  if(gameState.box.length <= 1) { toast("Can't trade your last Pokémon!", 2000); return; }
-  if(!confirm(`Remove ${pk.name} from your box? The code will be copied to your clipboard.`)) return;
-
-  // Remove from box and team first
-  gameState.box = gameState.box.filter(p=>p.uid!==uid);
-  gameState.team = gameState.team.filter(p=>p.uid!==uid);
-  if(gameState.equippedItems[uid]) delete gameState.equippedItems[uid];
-  if(gameState.currentFighterIdx >= gameState.team.length) gameState.currentFighterIdx = Math.max(0, gameState.team.length-1);
-
-  // Clear pending so it can't be reused
-  window._pendingTradeCode = null;
-  window._pendingTradeUid = null;
-
-  // Auto-copy code to clipboard
-  const doCopy = (text) => {
-    try {
-      navigator.clipboard.writeText(text).then(() => {
-        toast('✅ ' + pk.name + ' sent! Code copied to clipboard 📋', 4000);
-      }).catch(() => {
-        const ta = document.createElement('textarea');
-        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-        document.body.appendChild(ta); ta.select();
-        document.execCommand('copy'); ta.remove();
-        toast('✅ ' + pk.name + ' sent! Code copied to clipboard 📋', 4000);
-      });
-    } catch(e) { toast('✅ ' + pk.name + ' sent! (Copy failed — paste manually)', 4000); }
-  };
-  doCopy(code);
-
-  renderAll();
-  saveGame();
-
-  document.getElementById('trade-content').innerHTML = `
-    <div style="text-align:center;padding:16px">
-      <div style="font-size:40px;margin-bottom:8px">📋</div>
-      <div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:8px">TRADE CODE COPIED!</div>
-      <div style="font-size:14px;color:var(--text2);margin-bottom:16px">${pk.name} has left your box.<br>Paste the code to the recipient!</div>
-      <button class="btn" style="width:100%" onclick="showTradePickPokemon()">← Trade Another</button>
-    </div>
-  `;
-}
-
-function showTradeReceive() {
-  document.getElementById('trade-content').innerHTML = `
-    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:10px">📥 RECEIVE POKÉMON</div>
-    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Paste the trade code from your partner:</div>
-    <textarea id="trade-receive-input" placeholder="Paste trade code here..."></textarea>
-    <button class="btn" style="width:100%;border-color:#4fc3f7;color:var(--accent);font-size:18px" onclick="processTradeReceive()">📥 Receive Pokémon!</button>
-  `;
-}
-
-async function processTradeReceive() {
-  const code = document.getElementById('trade-receive-input')?.value?.trim();
-  if(!code) { toast('Paste a trade code first!', 2000); return; }
-  const data = decodePokemonTrade(code);
-  if(!data) { toast('❌ Invalid trade code!', 3000); return; }
-  
-  // Level cap: 50 until wave 1000, then full level
-  const receivedLevel = gameState.wave >= 1000 ? (data.level || 50) : Math.min(50, data.level || 50);
-
-  // Give new UID and mark OT
-  const pk = {
-    ...data,
-    uid: ++pUid,
-    level: receivedLevel,
-    ot: data.ot || 'Unknown',
-    statsLoaded: !!data.stats,
-    ivs: data.ivs || generateIVs(),
-  };
-  if(!pk.stats && pk.id) {
-    pk.stats = await fetchPokemonStats(pk.id);
-    pk.statsLoaded = true;
-  }
-  if(!pk.currentHp && pk.stats) pk.currentHp = getMaxHp(pk);
-
-  gameState.box.push(pk);
-  checkAndAnnounceCosmic(pk);
-  renderAll();
-  const cosmic = isCosmic(pk);
-  document.getElementById('trade-content').innerHTML = `
-    <div style="text-align:center;padding:16px">
-      <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="90" height="90" class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
-      <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:10px">${cosmic?'🌌 COSMIC ':pk.isShiny?'✨ ':''}${pk.name} received!</div>
-      <div style="font-size:14px;color:var(--text2);margin-top:6px">Lv.${pk.level} · OT: ${pk.ot}</div>
-      ${gameState.wave < 1000 && data.level > 50 ? `<div style="font-size:12px;color:#ff9e40;margin-top:2px">⚠️ Capped at Lv.50 (reach Wave 1000 to receive full level)</div>` : ''}
-      <div style="font-size:13px;color:var(--text2)">${pk.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
-    </div>`;
-  toast(`📥 ${pk.name} received from ${pk.ot}!`, 4000);
-}
 
 // ============================================================
 // GIRATINA BOSS
@@ -8147,7 +7811,393 @@ function handleSwordShieldFailed() {
   const nextSpawn = (savedRoad && savedRoad.active) ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
   setTimeout(nextSpawn, 2500);
 }
-const DEBUG_PASSWORD = 'mesaschlechter88';
+// ============================================================
+// ONLINE TRADE SYSTEM  (Cloudflare Worker-backed)
+// ============================================================
+
+// ▶ PASTE YOUR WORKER URL HERE after deploying to Cloudflare:
+const TRADE_WORKER_URL = 'https://pkmtrade.nichtbannenbitte008.workers.dev';
+
+// Internal state for the online trade flow
+let _onlineTradeCountdownInterval = null;
+
+// ── Utility ──────────────────────────────────────────────────
+
+function clearOnlineCountdown() {
+  if (_onlineTradeCountdownInterval) {
+    clearInterval(_onlineTradeCountdownInterval);
+    _onlineTradeCountdownInterval = null;
+  }
+}
+
+function fmtSeconds(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+// ── Main menu ─────────────────────────────────────────────────
+
+function renderOnlineTradeMenu() {
+  clearOnlineCountdown();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.3);border-radius:8px;padding:10px;margin-bottom:14px;text-align:center">
+      <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:4px">🌐 ONLINE TRADE</div>
+      <div style="font-size:13px;color:var(--text2)">Trade with anyone worldwide using a short 6-character code.<br>Codes expire in <b style="color:#ffd700">5 minutes</b>.</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showOnlinePostTrade()">📤 Post Trade</button>
+      <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showOnlineReceiveTrade()">📥 Enter Code</button>
+    </div>
+
+  `;
+}
+
+// ── POST TRADE: pick a Pokémon ────────────────────────────────
+
+function showOnlinePostTrade() {
+  clearOnlineCountdown();
+  if (gameState.box.length === 0) {
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text2)">Your box is empty!</div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+    return;
+  }
+  let html = `
+    <div style="font-family:'Press Start 2P';font-size:8px;color:#69f0ae;margin-bottom:10px">PICK POKÉMON TO POST</div>
+    <div class="poke-box" style="max-height:300px;overflow-y:auto">`;
+  gameState.box.forEach(p => {
+    const cosmic = isCosmic(p);
+    html += `<div class="poke-card${cosmic?' cosmic-card':p.isShiny?' shiny-card':''}"
+               onclick="showOnlineTradeConfirm(${p.uid})" style="cursor:pointer">
+      ${p.isShiny ? '<div style="position:absolute;top:3px;right:4px;font-size:14px">★</div>' : ''}
+      <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" onerror="this.src='${getBattleSprite(p.id, p.isShiny, p.uid)}'">
+      <span class="cname">${p.name}</span>
+      <span class="clevel">Lv.${p.level}</span>
+    </div>`;
+  });
+  html += `</div><button class="btn" style="width:100%;margin-top:10px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  document.getElementById('trade-content').innerHTML = html;
+}
+
+// ── POST TRADE: confirm & upload ──────────────────────────────
+
+function showOnlineTradeConfirm(uid) {
+  const pk = gameState.box.find(p => p.uid === uid);
+  if (!pk) return;
+  const cosmic = isCosmic(pk);
+  window._onlinePendingUid = uid;
+  document.getElementById('trade-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="72" height="72"
+           class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}"
+           onerror="this.src='${getBattleSprite(pk.id,pk.isShiny)}'">
+      <div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${cosmic?'🌌 COSMIC ':''}${pk.isShiny?'✨ ':''}${pk.name}</div>
+        <div style="font-size:14px;color:var(--text2)">Lv.${pk.level}</div>
+      </div>
+    </div>
+    <div style="background:rgba(239,83,80,0.08);border:1px solid rgba(239,83,80,0.3);border-radius:8px;padding:10px;margin-bottom:10px;font-size:13px;color:var(--text2);text-align:center">
+      <b style="color:#ef5350">${pk.name}</b> will be removed from your box immediately.<br>
+      A 6-character code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#ef5350;color:#ef5350;font-size:16px" onclick="confirmOnlinePost()">✅ Post Trade</button>
+      <button class="btn" style="flex:1" onclick="showOnlinePostTrade()">← Back</button>
+    </div>`;
+}
+
+async function confirmOnlinePost() {
+  const uid = window._onlinePendingUid;
+  if (!uid) { toast('Trade data lost, try again.', 2500); return; }
+  const pk = gameState.box.find(p => p.uid === uid);
+  if (!pk) { toast('Pokémon not found!', 2000); return; }
+  if (gameState.box.length <= 1) { toast("Can't trade your last Pokémon!", 2000); return; }
+
+  // Remove from box immediately
+  gameState.box = gameState.box.filter(p => p.uid !== uid);
+  gameState.team = gameState.team.filter(p => p.uid !== uid);
+  if (gameState.equippedItems[uid]) delete gameState.equippedItems[uid];
+  if (gameState.currentFighterIdx >= gameState.team.length)
+    gameState.currentFighterIdx = Math.max(0, gameState.team.length - 1);
+  renderAll(); saveGame();
+  window._onlinePendingUid = null;
+
+  // Show uploading spinner
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
+      <div style="font-size:16px;color:var(--text2)">Posting trade…</div>
+    </div>`;
+
+  // Upload to Worker
+  try {
+    const payload = encodePokemonTrade(pk);
+    const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'pokemon', data: payload, trainerName: gameState.trainerName || 'Trainer' }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    showOnlineCodeDisplay(result.code, result.expiresAt, pk);
+  } catch (e) {
+    // Worker unreachable — give Pokémon back!
+    gameState.box.push(pk);
+    renderAll(); saveGame();
+    toast('❌ Could not reach trade server. Pokémon returned!', 4000);
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:#ef5350">
+        <div style="font-size:32px;margin-bottom:8px">❌</div>
+        Could not reach the trade server.<br><br>
+        <span style="font-size:13px;color:var(--text2)">${pk.name} has been returned to your box.</span>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  }
+}
+
+// ── Show code + countdown ─────────────────────────────────────
+
+function showOnlineCodeDisplay(code, expiresAt, pk) {
+  clearOnlineCountdown();
+  const cosmic = isCosmic(pk);
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="72" height="72"
+           class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
+      <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold);margin-top:6px">${pk.name} posted!</div>
+    </div>
+    <div style="background:rgba(0,200,83,0.1);border:2px solid #00c853;border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Share this code with your trade partner:</div>
+      <div id="online-trade-code" style="font-family:'Press Start 2P';font-size:22px;color:#69f0ae;letter-spacing:6px;margin-bottom:10px">${code}</div>
+      <button class="btn" style="border-color:#69f0ae;color:#69f0ae;font-size:15px" onclick="copyOnlineCode('${code}')">📋 Copy Code</button>
+    </div>
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--text2)">Expires in: </span>
+      <span id="online-trade-timer" style="font-family:'Press Start 2P';font-size:12px;color:#ffd700">5:00</span>
+    </div>
+    <div style="font-size:12px;color:#555;text-align:center">Once claimed the code becomes invalid automatically.</div>
+  `;
+
+  // Countdown ticker
+  const tick = () => {
+    const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    const el = document.getElementById('online-trade-timer');
+    if (!el) { clearOnlineCountdown(); return; }
+    el.textContent = fmtSeconds(remaining);
+    if (remaining <= 60) el.style.color = '#ef5350';
+    if (remaining === 0) {
+      clearOnlineCountdown();
+      toast('⏰ Trade code expired!', 4000);
+      el.textContent = 'EXPIRED';
+    }
+  };
+  tick();
+  _onlineTradeCountdownInterval = setInterval(tick, 1000);
+}
+
+function copyOnlineCode(code) {
+  navigator.clipboard.writeText(code).then(() => {
+    toast('📋 Code copied!', 2000);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    toast('📋 Code copied!', 2000);
+  });
+}
+
+// ── RECEIVE TRADE: enter code ─────────────────────────────────
+
+function showOnlineReceiveTrade() {
+  clearOnlineCountdown();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:10px">📥 ENTER TRADE CODE</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:8px">Ask your trade partner for their 6-character code:</div>
+    <input id="online-trade-code-input" type="text" maxlength="6"
+      placeholder="e.g. ABC123"
+      style="width:100%;background:rgba(0,0,0,0.5);border:2px solid var(--border);border-radius:8px;
+             color:#69f0ae;font-family:'Press Start 2P';font-size:18px;padding:12px;text-align:center;
+             letter-spacing:6px;outline:none;text-transform:uppercase;margin-bottom:10px"
+      oninput="this.value=this.value.toUpperCase()"
+      onkeydown="if(event.key==='Enter')previewOnlineTrade()">
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="previewOnlineTrade()">🔍 Preview</button>
+      <button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">← Back</button>
+    </div>
+  `;
+  setTimeout(() => document.getElementById('online-trade-code-input')?.focus(), 50);
+}
+
+// ── Preview (GET /offer/:code) ────────────────────────────────
+
+async function previewOnlineTrade() {
+  const code = (document.getElementById('online-trade-code-input')?.value || '').trim().toUpperCase();
+  if (code.length !== 6) { toast('Enter a 6-character code!', 2000); return; }
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px">🔍</div>
+      <div style="font-size:16px;color:var(--text2)">Looking up trade…</div>
+    </div>`;
+
+  try {
+    const resp = await fetch(`${TRADE_WORKER_URL}/offer/${code}`);
+    if (resp.status === 404) {
+      toast('❌ Code not found or expired!', 3000);
+      showOnlineReceiveTrade();
+      return;
+    }
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    showOnlineTradePreview(code, result);
+  } catch (e) {
+    toast('❌ Could not reach trade server!', 3000);
+    showOnlineReceiveTrade();
+  }
+}
+
+function showOnlineTradePreview(code, result) {
+  clearOnlineCountdown();
+  const payload = result.payload;
+  const expiresAt = result.expiresAt;
+  let pk = null;
+  let previewHtml = '';
+
+  if (payload.type === 'pokemon') {
+    pk = decodePokemonTrade(payload.data);
+    if (pk) {
+      const cosmic = isCosmic(pk);
+      previewHtml = `
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;background:rgba(255,255,255,0.04);border-radius:8px;padding:10px">
+          <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="72" height="72"
+               class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
+          <div>
+            <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">${cosmic?'🌌 COSMIC ':pk.isShiny?'✨ ':''}${pk.name}</div>
+            <div style="font-size:14px;color:var(--text2)">Lv.${pk.level}</div>
+            <div style="font-size:13px;color:var(--text2)">OT: ${pk.ot||'Unknown'}</div>
+            <div style="font-size:13px">${(pk.types||[]).map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join(' ')}</div>
+          </div>
+        </div>`;
+    }
+  }
+
+  if (!previewHtml) {
+    previewHtml = `<div style="text-align:center;padding:12px;color:var(--text2)">Trade data loaded.</div>`;
+  }
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="font-family:'Press Start 2P';font-size:8px;color:var(--accent);margin-bottom:8px">🔍 TRADE PREVIEW — ${code}</div>
+    ${previewHtml}
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--text2)">Expires in: </span>
+      <span id="online-trade-timer" style="font-family:'Press Start 2P';font-size:12px;color:#ffd700">${fmtSeconds(result.remaining)}</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="acceptOnlineTrade('${code}')">✅ Accept Trade</button>
+      <button class="btn" style="flex:1" onclick="showOnlineReceiveTrade()">← Back</button>
+    </div>`;
+
+  // Countdown for preview
+  const tick = () => {
+    const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    const el = document.getElementById('online-trade-timer');
+    if (!el) { clearOnlineCountdown(); return; }
+    el.textContent = fmtSeconds(remaining);
+    if (remaining <= 60) el.style.color = '#ef5350';
+    if (remaining === 0) {
+      clearOnlineCountdown();
+      toast('⏰ Trade code expired!', 4000);
+      renderOnlineTradeMenu();
+    }
+  };
+  tick();
+  _onlineTradeCountdownInterval = setInterval(tick, 1000);
+}
+
+// ── Accept (POST /claim/:code) ────────────────────────────────
+
+async function acceptOnlineTrade(code) {
+  clearOnlineCountdown();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⚡</div>
+      <div style="font-size:16px;color:var(--text2)">Claiming trade…</div>
+    </div>`;
+
+  try {
+    const resp = await fetch(`${TRADE_WORKER_URL}/claim/${code}`, { method: 'POST' });
+
+    if (resp.status === 404) {
+      toast('❌ Trade already claimed or expired!', 4000);
+      renderOnlineTradeMenu();
+      return;
+    }
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const result = await resp.json();
+    const payload = result.payload;
+
+    if (payload.type === 'pokemon') {
+      const data = decodePokemonTrade(payload.data);
+      if (!data) { toast('❌ Corrupted trade data!', 3000); renderOnlineTradeMenu(); return; }
+
+      const receivedLevel = gameState.wave >= 1000 ? (data.level||50) : Math.min(50, data.level||50);
+      const pk = {
+        ...data,
+        uid: ++pUid,
+        level: receivedLevel,
+        ot: data.ot || payload.trainerName || 'Unknown',
+        statsLoaded: !!data.stats,
+        ivs: data.ivs || generateIVs(),
+      };
+      if (!pk.stats && pk.id) {
+        pk.stats = await fetchPokemonStats(pk.id);
+        pk.statsLoaded = true;
+      }
+      if (!pk.currentHp && pk.stats) pk.currentHp = getMaxHp(pk);
+
+      gameState.box.push(pk);
+      checkAndAnnounceCosmic(pk);
+      renderAll(); saveGame();
+
+      const cosmic = isCosmic(pk);
+      document.getElementById('trade-content').innerHTML = `
+        <div style="text-align:center;padding:16px">
+          <img src="${getSpriteUrl(pk.id, pk.isShiny, pk.uid)}" width="96" height="96"
+               class="${cosmic?'cosmic-sprite':pk.isShiny?'shiny-sprite':''}">
+          <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:10px">${cosmic?'🌌 COSMIC ':pk.isShiny?'✨ ':''}${pk.name} received!</div>
+          <div style="font-size:14px;color:var(--text2);margin-top:6px">Lv.${pk.level} · OT: ${pk.ot}</div>
+          ${gameState.wave < 1000 && data.level > 50 ? `<div style="font-size:12px;color:#ff9e40;margin-top:2px">⚠️ Capped at Lv.50 (reach Wave 1000 for full level)</div>` : ''}
+          <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
+        </div>`;
+      toast(`✅ Trade claimed! ${pk.name} added to your box!`, 5000);
+    } else {
+      toast('✅ Trade claimed!', 4000);
+      renderOnlineTradeMenu();
+    }
+  } catch (e) {
+    toast('❌ Could not reach trade server!', 3000);
+    renderOnlineTradeMenu();
+  }
+}
+
+// CSS spin keyframe (used in loading spinners above)
+(function() {
+  if (!document.getElementById('online-trade-style')) {
+    const s = document.createElement('style');
+    s.id = 'online-trade-style';
+    s.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+    document.head.appendChild(s);
+  }
+})();
+
+// ============================================================
+// END ONLINE TRADE SYSTEM
+// ============================================================
+
 let debugUnlocked = false;
 
 // Apply DEBUG_MODE on load
