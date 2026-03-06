@@ -7859,6 +7859,10 @@ function renderOnlineTradeMenu() {
       <button class="btn" style="flex:1;border-color:#00c853;color:#69f0ae;font-size:16px" onclick="showOnlinePostTrade()">🐾 Post Pokémon</button>
       <button class="btn" style="flex:1;border-color:#ff9e40;color:#ff9e40;font-size:16px" onclick="showOnlinePostItem()">🎒 Post Item</button>
     </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button class="btn" style="flex:1;border-color:#ffd700;color:#ffd700;font-size:16px" onclick="showOnlinePostGold()">💰 Post Gold</button>
+      <button class="btn" style="flex:1;border-color:#ab47bc;color:#ce93d8;font-size:16px" onclick="showOnlinePostGems()">💎 Post Gems</button>
+    </div>
     <div style="display:flex;gap:8px">
       <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showOnlineReceiveTrade()">📥 Enter Code</button>
     </div>
@@ -8107,6 +8111,28 @@ function showOnlineTradePreview(code, result) {
           </div>
         </div>`;
     }
+  } else if (payload.type === 'gold') {
+    const amount = Math.max(1, Math.floor(payload.amount) || 1);
+    previewHtml = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:12px">
+        <span style="font-size:52px">💰</span>
+        <div>
+          <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">GOLD</div>
+          <div style="font-size:22px;color:#ffd700;margin-top:4px">${amount.toLocaleString()}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">In-game currency</div>
+        </div>
+      </div>`;
+  } else if (payload.type === 'gems') {
+    const amount = Math.max(1, Math.floor(payload.amount) || 1);
+    previewHtml = `
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(171,71,188,0.06);border:1px solid rgba(171,71,188,0.25);border-radius:8px;padding:12px">
+        <span style="font-size:52px">💎</span>
+        <div>
+          <div style="font-family:'Press Start 2P';font-size:8px;color:#ab47bc">GEMS</div>
+          <div style="font-size:22px;color:#ce93d8;margin-top:4px">${amount}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">Premium currency</div>
+        </div>
+      </div>`;
   }
 
   if (!previewHtml) {
@@ -8213,6 +8239,28 @@ async function acceptOnlineTrade(code) {
           <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
         </div>`;
       toast(`✅ Trade claimed! ×${amount} ${item.name} added!`, 5000);
+    } else if (payload.type === 'gold') {
+      const amount = Math.max(1, Math.floor(payload.amount) || 1);
+      gameState.gold = (gameState.gold || 0) + amount;
+      renderAll(); saveGame();
+      document.getElementById('trade-content').innerHTML = `
+        <div style="text-align:center;padding:16px">
+          <div style="font-size:64px;margin-bottom:8px">💰</div>
+          <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:6px">+${amount.toLocaleString()} Gold received!</div>
+          <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
+        </div>`;
+      toast(`✅ Trade claimed! +${amount.toLocaleString()} Gold!`, 5000);
+    } else if (payload.type === 'gems') {
+      const amount = Math.max(1, Math.floor(payload.amount) || 1);
+      gameState.gems = (gameState.gems || 0) + amount;
+      renderAll(); saveGame();
+      document.getElementById('trade-content').innerHTML = `
+        <div style="text-align:center;padding:16px">
+          <div style="font-size:64px;margin-bottom:8px">💎</div>
+          <div style="font-family:'Press Start 2P';font-size:9px;color:#ab47bc;margin-top:6px">+${amount} Gems received!</div>
+          <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
+        </div>`;
+      toast(`✅ Trade claimed! +${amount} Gems!`, 5000);
     } else {
       toast('✅ Trade claimed!', 4000);
       renderOnlineTradeMenu();
@@ -8232,6 +8280,199 @@ async function acceptOnlineTrade(code) {
     document.head.appendChild(s);
   }
 })();
+
+// ── POST GOLD TRADE ───────────────────────────────────────────
+
+function showOnlinePostGold() {
+  clearOnlineCountdown();
+  const owned = gameState.gold || 0;
+  if (owned <= 0) {
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text2)">You have no gold to trade!</div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+    return;
+  }
+  window._onlineGoldAmt = Math.min(1000, owned);
+  document.getElementById('trade-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <span style="font-size:52px">💰</span>
+      <div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">GOLD</div>
+        <div style="font-size:14px;color:var(--text2)">You own: ${owned.toLocaleString()}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(-1000)">−1k</button>
+      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(-100)">−100</button>
+      <span id="online-gold-amt" style="font-family:'Press Start 2P';font-size:13px;color:#ffd700;min-width:80px;text-align:center">${window._onlineGoldAmt.toLocaleString()}</span>
+      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(100)">+100</button>
+      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(1000)">+1k</button>
+      <button class="btn" style="font-size:14px" onclick="window._onlineGoldAmt=${owned};document.getElementById('online-gold-amt').textContent='${owned.toLocaleString()}'">Max</button>
+    </div>
+    <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
+      Gold is <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#ffd700;color:#ffd700;font-size:16px" onclick="confirmOnlineGoldPost()">✅ Post Gold</button>
+      <button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">← Back</button>
+    </div>`;
+}
+
+function adjustGoldAmt(delta) {
+  const owned = gameState.gold || 0;
+  window._onlineGoldAmt = Math.max(1, Math.min(owned, (window._onlineGoldAmt || 1) + delta));
+  document.getElementById('online-gold-amt').textContent = window._onlineGoldAmt.toLocaleString();
+}
+
+async function confirmOnlineGoldPost() {
+  const amount = window._onlineGoldAmt || 1;
+  if (gameState.gold < amount) { toast('Not enough gold!', 2000); return; }
+
+  gameState.gold -= amount;
+  renderAll(); saveGame();
+  window._onlineGoldAmt = null;
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
+      <div style="font-size:16px;color:var(--text2)">Posting gold trade…</div>
+    </div>`;
+
+  try {
+    const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'gold', amount, trainerName: gameState.trainerName || 'Trainer' }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💰', 'Gold', amount, '#ffd700');
+  } catch (e) {
+    gameState.gold += amount;
+    renderAll(); saveGame();
+    toast('❌ Could not reach trade server. Gold returned!', 4000);
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:#ef5350">
+        <div style="font-size:32px;margin-bottom:8px">❌</div>
+        Could not reach the trade server.<br><br>
+        <span style="font-size:13px;color:var(--text2)">${amount.toLocaleString()} Gold returned.</span>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  }
+}
+
+// ── POST GEMS TRADE ───────────────────────────────────────────
+
+function showOnlinePostGems() {
+  clearOnlineCountdown();
+  const owned = gameState.gems || 0;
+  if (owned <= 0) {
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--text2)">You have no gems to trade!</div>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+    return;
+  }
+  window._onlineGemsAmt = 1;
+  document.getElementById('trade-content').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <span style="font-size:52px">💎</span>
+      <div>
+        <div style="font-family:'Press Start 2P';font-size:8px;color:#ab47bc">GEMS</div>
+        <div style="font-size:14px;color:var(--text2)">You own: ${owned}</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn" style="font-size:18px;padding:4px 10px"
+        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-100);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−100</button>
+      <button class="btn" style="font-size:18px;padding:4px 10px"
+        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-10);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−10</button>
+      <button class="btn" style="font-size:20px;padding:4px 12px"
+        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-1);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−</button>
+      <span id="online-gems-amt" style="font-family:'Press Start 2P';font-size:14px;color:#ce93d8;min-width:48px;text-align:center">1</span>
+      <button class="btn" style="font-size:20px;padding:4px 12px"
+        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+1);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+</button>
+      <button class="btn" style="font-size:18px;padding:4px 10px"
+        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+10);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+10</button>
+      <button class="btn" style="font-size:18px;padding:4px 10px"
+        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+100);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+100</button>
+      <button class="btn" style="font-size:14px"
+        onclick="window._onlineGemsAmt=${owned};document.getElementById('online-gems-amt').textContent='${owned}'">Max</button>
+    </div>
+    <div style="background:rgba(171,71,188,0.08);border:1px solid rgba(171,71,188,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
+      Gems are <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" style="flex:1;border-color:#ab47bc;color:#ce93d8;font-size:16px" onclick="confirmOnlineGemsPost()">✅ Post Gems</button>
+      <button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">← Back</button>
+    </div>`;
+}
+
+async function confirmOnlineGemsPost() {
+  const amount = window._onlineGemsAmt || 1;
+  if (gameState.gems < amount) { toast('Not enough gems!', 2000); return; }
+
+  gameState.gems -= amount;
+  renderAll(); saveGame();
+  window._onlineGemsAmt = null;
+
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;padding:24px">
+      <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
+      <div style="font-size:16px;color:var(--text2)">Posting gems trade…</div>
+    </div>`;
+
+  try {
+    const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'gems', amount, trainerName: gameState.trainerName || 'Trainer' }),
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.json();
+    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💎', 'Gems', amount, '#ab47bc');
+  } catch (e) {
+    gameState.gems += amount;
+    renderAll(); saveGame();
+    toast('❌ Could not reach trade server. Gems returned!', 4000);
+    document.getElementById('trade-content').innerHTML = `
+      <div style="text-align:center;padding:20px;color:#ef5350">
+        <div style="font-size:32px;margin-bottom:8px">❌</div>
+        Could not reach the trade server.<br><br>
+        <span style="font-size:13px;color:var(--text2)">${amount} Gems returned.</span>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  }
+}
+
+function showOnlineCurrencyCodeDisplay(code, expiresAt, emoji, label, amount, color) {
+  clearOnlineCountdown();
+  document.getElementById('trade-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:64px">${emoji}</div>
+      <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold);margin-top:6px">${amount.toLocaleString()} ${label} posted!</div>
+    </div>
+    <div style="background:rgba(255,150,0,0.1);border:2px solid ${color};border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Share this code with your trade partner:</div>
+      <div style="font-family:'Press Start 2P';font-size:22px;color:${color};letter-spacing:6px;margin-bottom:10px">${code}</div>
+      <button class="btn" style="border-color:${color};color:${color};font-size:15px" onclick="copyOnlineCode('${code}')">📋 Copy Code</button>
+    </div>
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:13px;color:var(--text2)">Expires in: </span>
+      <span id="online-trade-timer" style="font-family:'Press Start 2P';font-size:12px;color:#ffd700">5:00</span>
+    </div>
+    <div style="font-size:12px;color:#555;text-align:center">Once claimed the code becomes invalid automatically.</div>`;
+
+  const tick = () => {
+    const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+    const el = document.getElementById('online-trade-timer');
+    if (!el) { clearOnlineCountdown(); return; }
+    el.textContent = fmtSeconds(remaining);
+    if (remaining <= 60) el.style.color = '#ef5350';
+    if (remaining === 0) { clearOnlineCountdown(); toast('⏰ Trade code expired!', 4000); el.textContent = 'EXPIRED'; }
+  };
+  tick();
+  _onlineTradeCountdownInterval = setInterval(tick, 1000);
+}
 
 // ── POST ITEM TRADE ───────────────────────────────────────────
 
