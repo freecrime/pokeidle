@@ -1114,7 +1114,7 @@ body::before {
     <div class="resource"><span class="icon">🏆</span><span class="val" id="res-wins">0</span> Wins</div>
     <div style="margin-left:auto;display:flex;gap:8px">
       <button onclick="openRedeemOverlay()" style="background:linear-gradient(135deg,rgba(255,215,0,0.2),rgba(255,165,0,0.1));border:1px solid var(--gold);color:var(--gold);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px;transition:all 0.2s" onmouseover="this.style.boxShadow='0 0 12px rgba(255,215,0,0.4)'" onmouseout="this.style.boxShadow=''">🎁 REDEEM</button>
-      <button disabled style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);color:rgba(255,255,255,0.2);padding:4px 12px;border-radius:6px;cursor:not-allowed;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px" title="Saves disabled">💾 SAVES</button>
+      <button disabled style="background:rgba(80,80,80,0.15);border:1px solid #444;color:#555;padding:4px 12px;border-radius:6px;cursor:not-allowed;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px;opacity:0.45">💾 SAVES</button>
       <button onclick="openOptionsOverlay()" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.2);color:var(--text2);padding:4px 12px;border-radius:6px;cursor:pointer;font-family:'VT323',monospace;font-size:16px;letter-spacing:1px">⚙️ OPTIONS</button>
     </div>
   </div>
@@ -1322,8 +1322,7 @@ body::before {
           <div style="font-size:13px;color:var(--text2);margin-bottom:8px;text-align:center">
             Every item from Normal &amp; Epic pools<br>
             <span style="color:#ffd700">+ exclusive <b>⭐ SSS Candy</b> (1% chance)</span><br>
-            <span style="color:#00e676">+ <b>💚 Sceptilite</b> · <b>💙 Swampertite</b> · <b>🔥 Blazikenite</b> (1% each)</span><br>
-            <span style="font-size:12px;color:#888">Only source of Mega Stones &amp; SSS Candy</span>
+            <span style="font-size:12px;color:#888">Only source of SSS Candy · Mega Stones from Mega Clash!</span>
           </div>
           <div class="gacha-btns">
             <button class="btn" style="border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,0.06);width:100%" onclick="doPremiumItemGacha()">✦ × 10<br><span style="font-size:13px;color:var(--gold)">💰 1,500,000</span></button>
@@ -1826,6 +1825,9 @@ const EPIC_ITEMS = [
   {id:'sceptilite',  name:'Cracked Sceptilite',   emoji:'💚', desc:'A Mega Stone for Sceptile — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'sceptilite'},
   {id:'swampertite', name:'Cracked Swampertite',  emoji:'💙', desc:'A Mega Stone for Swampert — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'swampertite'},
   {id:'blazikenite', name:'Cracked Blazikenite',  emoji:'🔥', desc:'A Mega Stone for Blaziken — but its Mega energy is slowly leaking out. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'blazikenite'},
+  {id:'gengarite',   name:'Cracked Gengarite',    emoji:'👻', desc:'A Mega Stone for Gengar — its shadowy energy flickers. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'gengarite'},
+  {id:'aggronite',   name:'Cracked Aggronite',    emoji:'🪨', desc:'A Mega Stone for Aggron — its iron aura is unstable. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'aggronite'},
+  {id:'garchompite', name:'Cracked Garchompite',  emoji:'🦈', desc:'A Mega Stone for Garchomp — its draconic power surges unevenly. Still triggers Mega Evolution, but cannot carry a stat bonus. Get a new one from Premium Gacha for full power.', effect:'garchompite'},
   // Epic held items
   {id:'mega_stone',  name:'Mega Stone',   emoji:'💎', desc:'+35% to all stats. No conditions.', effect:'mega_stone', value:1.35},
   {id:'soul_dew',    name:'Soul Dew',     emoji:'💠', desc:'+45% Special Attack, +25% Special Defense', effect:'soul_dew', value:1.45},
@@ -1909,7 +1911,7 @@ function isPerfectedZygarde(pokemon) {
 
 function getMegaStoneBaseId(itemId) {
   if(!itemId) return null;
-  if(itemId === 'sceptilite' || itemId === 'swampertite' || itemId === 'blazikenite') return itemId;
+  if(itemId === 'sceptilite' || itemId === 'swampertite' || itemId === 'blazikenite' || itemId === 'gengarite' || itemId === 'aggronite' || itemId === 'garchompite') return itemId;
   if(gameState && gameState.megaStoneInstances && gameState.megaStoneInstances[itemId]) return gameState.megaStoneInstances[itemId].base;
   return null;
 }
@@ -1932,12 +1934,25 @@ function getItemByEquipId(equipId) {
     if(base) {
       const STAT_LABELS = {'attack':'Atk','special-attack':'Sp.Atk','defense':'Def','special-defense':'Sp.Def','speed':'Spd'};
       const bonusLabel = `+${Math.round(data.pct*100)}% ${STAT_LABELS[data.stat]||data.stat}`;
-      const STONE_NAMES = { sceptilite: 'Sceptilite', swampertite: 'Swampertite', blazikenite: 'Blazikenite' };
+      const STONE_NAMES = { sceptilite: 'Sceptilite', swampertite: 'Swampertite', blazikenite: 'Blazikenite', gengarite: 'Gengarite', aggronite: 'Aggronite', garchompite: 'Garchompite' };
       const cleanName = STONE_NAMES[data.base] || base.name.replace(/^Cracked\s*/i, '');
-      return { ...base, id: equipId, name: `${cleanName} (${bonusLabel})`, _instanceData: data };
+      const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${data.base}.png`;
+      return { ...base, id: equipId, name: `${cleanName} (${bonusLabel})`, _instanceData: data, spriteUrl };
     }
   }
+  // Check if it's a base mega stone ID (old/cracked copies)
+  const MEGA_STONE_SPRITE = { sceptilite:'sceptilite', swampertite:'swampertite', blazikenite:'blazikenite', gengarite:'gengarite', aggronite:'aggronite', garchompite:'garchompite' };
+  if(MEGA_STONE_SPRITE[equipId]) {
+    const base = allItems.find(i => i.id === equipId);
+    if(base) return { ...base, spriteUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${MEGA_STONE_SPRITE[equipId]}.png` };
+  }
   return null;
+}
+
+function getItemIcon(item, size=20) {
+  if(!item) return '';
+  if(item.spriteUrl) return `<img src="${item.spriteUrl}" style="width:${size}px;height:${size}px;image-rendering:pixelated;vertical-align:middle">`;
+  return item.emoji || '';
 }
 
 function isMegaSceptile(pokemon) {
@@ -1956,6 +1971,24 @@ function isMegaBlaziken(pokemon) {
   if(!pokemon || pokemon.id !== 257) return false;
   const eq = gameState.equippedItems[pokemon.uid];
   return eq === 'blazikenite' || (getMegaStoneBaseId(eq) === 'blazikenite');
+}
+
+function isMegaGengar(pokemon) {
+  if(!pokemon || pokemon.id !== 94) return false;
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'gengarite' || (getMegaStoneBaseId(eq) === 'gengarite');
+}
+
+function isMegaAggron(pokemon) {
+  if(!pokemon || pokemon.id !== 306) return false;
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'aggronite' || (getMegaStoneBaseId(eq) === 'aggronite');
+}
+
+function isMegaGarchomp(pokemon) {
+  if(!pokemon || pokemon.id !== 445) return false;
+  const eq = gameState.equippedItems[pokemon.uid];
+  return eq === 'garchompite' || (getMegaStoneBaseId(eq) === 'garchompite');
 }
 
 function hasMegaOnTeam(excludeUid) {
@@ -2343,8 +2376,26 @@ function getEffectiveStat(stat, pokemon, statName) {
       if(isSSSCandyStat) val = Math.floor(val * 2.3);
       else val = Math.floor(val * 1.85);
     }
+    // Mega Gengar
+    if(item.effect === 'gengarite' && pokemon.id === 94) {
+      const isSSSCandyStat = pokemon._sssUsed && pokemon._sssStat === statName;
+      if(isSSSCandyStat) val = Math.floor(val * 1.9);
+      else val = Math.floor(val * 1.5);
+    }
+    // Mega Aggron — The Wall: massive defense, reduced attack
+    if(item.effect === 'aggronite' && pokemon.id === 306) {
+      if(statName === 'defense' || statName === 'special-defense') val = Math.floor(val * 4.0);
+      else if(statName === 'attack' || statName === 'special-attack') val = Math.floor(val * 0.6);
+      else val = Math.floor(val * 1.5);
+    }
+    // Mega Garchomp
+    if(item.effect === 'garchompite' && pokemon.id === 445) {
+      const isSSSCandyStat = pokemon._sssUsed && pokemon._sssStat === statName;
+      if(isSSSCandyStat) val = Math.floor(val * 1.9);
+      else val = Math.floor(val * 1.5);
+    }
     // Pre-rolled stone bonus (new stones only; old ones have _megaStoneBonus = null)
-    if(['sceptilite','swampertite','blazikenite'].includes(item.effect) && pokemon._megaStoneBonus && pokemon._megaStoneBonus.stat === statName) {
+    if(['sceptilite','swampertite','blazikenite','gengarite','aggronite','garchompite'].includes(item.effect) && pokemon._megaStoneBonus && pokemon._megaStoneBonus.stat === statName) {
       val = Math.floor(val * (1 + pokemon._megaStoneBonus.pct));
     }
   }
@@ -2378,6 +2429,9 @@ function getMaxHp(pokemon) {
   if(item?.effect === 'sceptilite' && pokemon.id === 254) hp = Math.floor(hp * 1.2); // Mega Sceptile ~2060
   if(item?.effect === 'swampertite' && pokemon.id === 260) hp = Math.floor(hp * 1.1); // Mega Swampert ~2300
   if(item?.effect === 'blazikenite' && pokemon.id === 257) hp = Math.floor(hp * 1.15); // Mega Blaziken ~2120
+  if(item?.effect === 'gengarite' && pokemon.id === 94) hp = Math.floor(hp * 1.15); // Mega Gengar ~2000
+  if(item?.effect === 'aggronite' && pokemon.id === 306) hp = Math.floor(hp * 5.0); // Mega Aggron THE WALL ~6000 HP
+  if(item?.effect === 'garchompite' && pokemon.id === 445) hp = Math.floor(hp * 1.1); // Mega Garchomp ~2200
   return hp;
 }
 
@@ -2477,6 +2531,30 @@ function getSpriteUrl(id, isShiny=false, uid=null) {
         : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10050.png`;
     }
   }
+  if(id === 94 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaGengar(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10038.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10038.png`;
+    }
+  }
+  if(id === 306 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaAggron(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10053.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10053.png`;
+    }
+  }
+  if(id === 445 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaGarchomp(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10058.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10058.png`;
+    }
+  }
   if(id === 888) {
     const pk = uid != null ? _getPkByUid(uid) : null;
     const shiny = pk ? pk.isShiny : isShiny;
@@ -2574,6 +2652,30 @@ function getBattleSprite(id, isShiny=false, uid=null) {
       return pk.isShiny
         ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10050.png`
         : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10050.png`;
+    }
+  }
+  if(id === 94 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaGengar(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10038.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10038.png`;
+    }
+  }
+  if(id === 306 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaAggron(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10053.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10053.png`;
+    }
+  }
+  if(id === 445 && uid != null) {
+    const pk = _getPkByUid(uid);
+    if(pk && isMegaGarchomp(pk)) {
+      return pk.isShiny
+        ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10058.png`
+        : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10058.png`;
     }
   }
   if(id === 888) {
@@ -2725,7 +2827,7 @@ function loadSaveSlotFromPicker(slotIdx) {
   if(!s) return;
   try {
     if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
-    bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
+    bossBattleActive = false; vrBattleActive = false; mcBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
     currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null; kyuremEnemy = null; zygardeEnemy = null; eventBossEnemy = null;
     battlePaused = false;
     playerAttackCooldown = 0; enemyAttackCooldown = 0;
@@ -2847,7 +2949,7 @@ function getActiveRegion() {
 }
 
 async function spawnEnemy() {
-  if(bossStarting || bossBattleActive || giratinaBattleActive || kyuremBattleActive || zygardeBattleActive || swordShieldBattleActive || eventBossBattleActive || vrBattleActive) return;
+  if(bossStarting || bossBattleActive || giratinaBattleActive || kyuremBattleActive || zygardeBattleActive || swordShieldBattleActive || eventBossBattleActive || vrBattleActive || mcBattleActive) return;
   const region = getActiveRegion();
   document.getElementById('region-label').textContent = region.name;
   document.getElementById('wave-label').textContent = `Wave ${gameState.wave}`;
@@ -2982,6 +3084,7 @@ function doEnemyAttack(player) {
 function enemyDefeated(player) {
   if(bossBattleActive && currentEnemy?.isBoss) {
     if(vrBattleActive && currentEnemy?._isVR) handleVRDefeated(player);
+    else if(mcBattleActive && currentEnemy?._isMC) handleMCDefeated(player);
     else if(currentEnemy?._isGiratina) handleGiratinaDefeated(player);
     else if(currentEnemy?._isKyurem) handleKyuremDefeated(player);
     else if(currentEnemy?._isSwordShield) handleSwordShieldDefeated(player);
@@ -3094,6 +3197,7 @@ function playerPokemonFainted(player) {
       renderBottomBar();
     } else {
       if(vrBattleActive) handleVRFailed();
+      else if(mcBattleActive) handleMCFailed();
       else if(giratinaBattleActive) handleGiratinaFailed();
       else if(kyuremBattleActive) handleKyuremFailed();
       else if(zygardeBattleActive) handleZygardeFailed();
@@ -3295,7 +3399,11 @@ function updateEnemyUI() {
   document.getElementById('enemy-hp-txt').textContent = `${formatNum(Math.max(0,currentEnemy.currentHp))}/${formatNum(maxHp)}`;
 
   const sprite = document.getElementById('enemy-sprite');
-  sprite.src = getBattleSprite(currentEnemy.id, currentEnemy.isShiny);
+  if(currentEnemy._customSprite) {
+    sprite.src = (currentEnemy.isShiny && currentEnemy._customSpriteShiny) ? currentEnemy._customSpriteShiny : currentEnemy._customSprite;
+  } else {
+    sprite.src = getBattleSprite(currentEnemy.id, currentEnemy.isShiny);
+  }
   sprite.className = getPokemonSpriteClass(currentEnemy);
 }
 
@@ -3389,8 +3497,8 @@ function renderPokemonBox() {
       <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" onerror="this.src='${getBattleSprite(p.id, p.isShiny, p.uid)}'">
       <span class="cname">${cosmic ? '<span style="background:linear-gradient(90deg,#00ffff,#bf00ff,#ff00aa,#00ffff);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:shimmer 1.5s linear infinite">COSMIC</span> ' : ''}${p.name}</span>
       <span class="clevel">Lv.${p.level}</span>
-      ${p.ivs ? (() => { const avg = Math.round(Object.values(p.ivs).reduce((a,b)=>a+b,0)/6); const g = getStatGrade(avg); const isMega = isMegaRayquaza(p); const isOrigin = isOriginGiratina(p); const isFused = isDNAFused(p); const isCrownedForm = isCrownedZacian(p) || isCrownedZamazenta(p); const isMegaStart = isMegaSceptile(p)||isMegaSwampert(p)||isMegaBlaziken(p); const hasSSStat = (isMega||isOrigin||isFused||p._naturalSSS||isCrownedForm||p._sssUsed||p._isEnvy||isMegaStart||isPerfectedZygarde(p)) && Object.values(p.ivs).some(iv=>iv>=31); if(hasSSStat) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px;animation:shimmer 0.8s linear infinite">SSS</span>`; if(g.isSS) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px">SS</span>`; return `<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${g.color}">${g.label}</span>`; })() : ''}
-      ${equippedItem ? `<div style="font-size:16px">${equippedItem.emoji}</div>` : ''}
+      ${p.ivs ? (() => { const avg = Math.round(Object.values(p.ivs).reduce((a,b)=>a+b,0)/6); const g = getStatGrade(avg); const isMega = isMegaRayquaza(p); const isOrigin = isOriginGiratina(p); const isFused = isDNAFused(p); const isCrownedForm = isCrownedZacian(p) || isCrownedZamazenta(p); const isMegaStart = isMegaSceptile(p)||isMegaSwampert(p)||isMegaBlaziken(p); const isMegaNew = isMegaGengar(p)||isMegaAggron(p)||isMegaGarchomp(p); const hasSSStat = (isMega||isOrigin||isFused||p._naturalSSS||isCrownedForm||p._sssUsed||p._isEnvy||isMegaStart||isMegaNew||isPerfectedZygarde(p)) && Object.values(p.ivs).some(iv=>iv>=31); if(hasSSStat) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px;animation:shimmer 0.8s linear infinite">SSS</span>`; if(g.isSS) return `<span class="ss-rainbow" style="font-family:'Press Start 2P',monospace;font-size:6px">SS</span>`; return `<span style="font-family:'Press Start 2P',monospace;font-size:6px;color:${g.color}">${g.label}</span>`; })() : ''}
+      ${equippedItem ? `<div style="line-height:1">${getItemIcon(equippedItem,22)}</div>` : ''}
       <div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:3px">
         ${p.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]};font-size:10px">${t}</span>`).join('')}
       </div>
@@ -3434,7 +3542,7 @@ function renderItems() {
   const grid = document.getElementById('item-grid');
   grid.innerHTML = '';
   const allItems = ITEMS.concat(EPIC_ITEMS);
-  const STONE_BASE_IDS = new Set(['sceptilite','swampertite','blazikenite']);
+  const STONE_BASE_IDS = new Set(['sceptilite','swampertite','blazikenite','gengarite','aggronite','garchompite']);
   let hasAny = false;
 
   allItems.forEach(item => {
@@ -3472,7 +3580,14 @@ function renderItems() {
 
   // Render each unique stone instance separately
   if(gameState.megaStoneInstances) {
-    const STONE_INFO = { sceptilite:{emoji:'💚',name:'Sceptilite'}, swampertite:{emoji:'💙',name:'Swampertite'}, blazikenite:{emoji:'🔥',name:'Blazikenite'} };
+    const STONE_INFO = {
+      sceptilite:  {name:'Sceptilite',  megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sceptilite.png'},
+      swampertite: {name:'Swampertite', megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/swampertite.png'},
+      blazikenite: {name:'Blazikenite', megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/blazikenite.png'},
+      gengarite:   {name:'Gengarite',   megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gengarite.png'},
+      aggronite:   {name:'Aggronite',   megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/aggronite.png'},
+      garchompite: {name:'Garchompite', megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/garchompite.png'},
+    };
     const STAT_LABELS = {'attack':'Atk','special-attack':'Sp.Atk','defense':'Def','special-defense':'Sp.Def','speed':'Speed'};
     Object.entries(gameState.megaStoneInstances).forEach(([instanceId, data]) => {
       if((gameState.inventory[instanceId] || 0) === 0) return;
@@ -3485,7 +3600,7 @@ function renderItems() {
       div.style.border = '1px solid #00e676';
       div.style.position = 'relative';
       div.title = `${info.name}: Triggers Mega Evolution. Bonus: ${bonusLabel}`;
-      div.innerHTML = `${info.emoji}<span style="position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;color:#69f0ae;line-height:1.1">${bonusLabel}</span>`;
+      div.innerHTML = `<img src="${info.megaSprite}" style="width:52px;height:52px;image-rendering:pixelated"><span style="position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:9px;color:#69f0ae;line-height:1.1">${bonusLabel}</span>`;
       div.onclick = () => showMegaStoneInstanceModal(instanceId);
       div.oncontextmenu = (e) => { e.preventDefault(); trashMegaStoneInstance(instanceId); };
       grid.appendChild(div);
@@ -4103,6 +4218,206 @@ function handleVRFailed() {
   setTimeout(nextSpawn, 2500);
 }
 
+// ============================================================
+// MEGA CLASH
+// ============================================================
+const MEGA_CLASH_POOL = [
+  {id:254, name:'Mega Sceptile',  baseId:254, types:['grass','dragon'],  stone:'sceptilite',  megaSpriteId:10065},
+  {id:260, name:'Mega Swampert',  baseId:260, types:['water','ground'],  stone:'swampertite', megaSpriteId:10064},
+  {id:257, name:'Mega Blaziken',  baseId:257, types:['fire','fighting'],  stone:'blazikenite', megaSpriteId:10050},
+  {id:94,  name:'Mega Gengar',    baseId:94,  types:['ghost','poison'],   stone:'gengarite',   megaSpriteId:10038},
+  {id:306, name:'Mega Aggron',    baseId:306, types:['steel'],            stone:'aggronite',   megaSpriteId:10053},
+  {id:445, name:'Mega Garchomp',  baseId:445, types:['dragon','ground'],  stone:'garchompite', megaSpriteId:10058},
+];
+const MC_FIXED_LEVEL = 270;
+let mcBattleActive = false;
+let mcEnemy = null;
+
+function startMegaClash() {
+  if(gameState.gems < 125) { toast('Need 125 💎 Gems for Mega Clash!'); return; }
+  if(gameState.team.length === 0) { toast('You need a team!'); return; }
+  battlePaused = true;
+  document.getElementById('auto-btn').textContent = '▶ RESUME';
+  const chosen = MEGA_CLASH_POOL[Math.floor(Math.random() * MEGA_CLASH_POOL.length)];
+  const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${chosen.megaSpriteId}.png`;
+  document.getElementById('modal-title').textContent = '⚡ MEGA CLASH Lv.270';
+  document.getElementById('modal-content').innerHTML = `
+    <div style="text-align:center;padding:8px">
+      <img src="${spriteUrl}" width="120" height="120" style="image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(0,230,118,0.7))">
+      <div style="margin:10px 0;font-family:'Press Start 2P';font-size:8px;color:#00e676">MEGA CLASH CHALLENGER</div>
+      <div style="font-size:22px;color:#69f0ae;margin-bottom:4px">${chosen.name} <span style="color:var(--text2);font-size:16px">Lv.${MC_FIXED_LEVEL}</span></div>
+      <div style="display:flex;gap:4px;justify-content:center;margin-bottom:10px">
+        ${chosen.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]}">${t}</span>`).join('')}
+      </div>
+      <div style="font-size:14px;color:var(--text2);margin-bottom:6px">
+        <span style="color:#69f0ae">Capture chance: ~30% · Shiny: 1/50</span><br>
+        <span style="color:#00e676">1% chance: random Mega Stone drop</span><br>
+        <span style="color:var(--text2);font-size:12px">Cost: 125 💎 · Level stays at ${MC_FIXED_LEVEL}</span>
+      </div>
+      <div style="font-size:11px;color:#aaa;margin-bottom:12px">Stone drop is random — any of the 6 Mega Stones!</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button class="btn" style="border-color:#00e676;color:#00e676" onclick="confirmMegaClash(${chosen.baseId},'${chosen.name}','${chosen.types.join(',')}',${chosen.megaSpriteId},'${chosen.stone}')">⚡ Fight! (125💎)</button>
+        <button class="btn gold" onclick="closeModal()">Back</button>
+      </div>
+    </div>
+  `;
+  openModal();
+}
+
+async function confirmMegaClash(baseId, name, typesStr, megaSpriteId, stone) {
+  if(gameState.gems < 125) { toast('Not enough Gems!'); closeModal(); return; }
+  gameState.gems -= 125;
+  updateResourceUI();
+  closeModal();
+  battlePaused = true;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  currentEnemy = null;
+  const savedRoad = { ...gameState.road };
+  gameState.road.active = false;
+  document.getElementById('arena').classList.remove('road-mode');
+  const types = typesStr.split(',');
+  const stats = await fetchPokemonStats(baseId);
+  mcEnemy = newPokemonEntry(baseId, name, types, MC_FIXED_LEVEL, false, true);
+  mcEnemy.stats = stats;
+  mcEnemy.statsLoaded = true;
+  mcEnemy._mcSavedRoad = savedRoad;
+  mcEnemy._isMC = true;
+  mcEnemy._mcStone = stone;
+  mcEnemy._mcMegaSpriteId = megaSpriteId;
+  mcEnemy._customSprite = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${megaSpriteId}.png`;
+  mcEnemy._attackMult = 0.7;
+  const baseHp = getMaxHp(mcEnemy);
+  mcEnemy._bossHpMax = Math.floor(baseHp * 7.5);
+  mcEnemy.currentHp = mcEnemy._bossHpMax;
+  mcEnemy.isBoss = true;
+  currentEnemy = mcEnemy;
+  mcBattleActive = true;
+  bossBattleActive = true;
+  gameState.team.forEach(p => { if(p.statsLoaded) p.currentHp = getMaxHp(p); });
+  document.getElementById('arena').style.background = 'radial-gradient(ellipse at 50% 30%, rgba(0,120,60,0.5) 0%, transparent 60%), linear-gradient(180deg, #000d05 0%, #001a0b 40%, #000800 100%)';
+  addLog(`⚡ Mega Clash: ${name} (Lv.${MC_FIXED_LEVEL}) appeared!`, 'log-evolve');
+  toast(`⚡ MEGA CLASH: ${name} Lv.${MC_FIXED_LEVEL}!`, 3000);
+  battlePaused = false;
+  updateEnemyUI();
+}
+
+function handleMCDefeated(player) {
+  const savedRoad = mcEnemy?._mcSavedRoad;
+  const defeatedMon = mcEnemy;
+  mcBattleActive = false;
+  bossBattleActive = false;
+  currentEnemy = null;
+  mcEnemy = null;
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) { gameState.road = savedRoad; document.getElementById('arena').classList.add('road-mode'); }
+  addLog(`🏆 ${defeatedMon.name} was defeated in Mega Clash!`, 'log-evolve');
+  saveGame();
+
+  // 1% chance: award a RANDOM mega stone (as instanced, with bonus stats)
+  const stoneDropped = Math.random() < 0.01;
+  if(stoneDropped) {
+    const ALL_STONES = ['sceptilite','swampertite','blazikenite','gengarite','aggronite','garchompite'];
+    const droppedStone = ALL_STONES[Math.floor(Math.random() * ALL_STONES.length)];
+    const STONE_NAMES = {sceptilite:'Sceptilite',swampertite:'Swampertite',blazikenite:'Blazikenite',gengarite:'Gengarite',aggronite:'Aggronite',garchompite:'Garchompite'};
+    const BONUS_STATS = ['attack','speed'];
+    const bonusStat = BONUS_STATS[Math.floor(Math.random()*BONUS_STATS.length)];
+    const bonusPct  = +(0.04 + Math.random() * 0.06).toFixed(3);
+    const instanceId = droppedStone + '_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+    if(!gameState.megaStoneInstances) gameState.megaStoneInstances = {};
+    gameState.megaStoneInstances[instanceId] = { base: droppedStone, stat: bonusStat, pct: bonusPct };
+    gameState.inventory[instanceId] = 1;
+    const bonusLabel = `+${Math.round(bonusPct*100)}% ${bonusStat.replace('special-attack','Sp.Atk')}`;
+    addLog(`💎 MEGA STONE DROPPED! ${STONE_NAMES[droppedStone]} (${bonusLabel})`, 'log-shiny');
+    toast(`💎 ${STONE_NAMES[droppedStone]} (${bonusLabel}) dropped from Mega Clash!`, 5000);
+    renderAll();
+  }
+
+  const captureChance = 0.30;
+  const canCapture = Math.random() < captureChance;
+  const isShiny = Math.random() < 1/50;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  showMCCaptureCutscene(defeatedMon, canCapture, isShiny, savedRoad);
+}
+
+function showMCCaptureCutscene(mon, canCapture, isShiny, savedRoad) {
+  const overlay = document.getElementById('capture-overlay');
+  const title = document.getElementById('capture-title');
+  const spriteEl = document.getElementById('capture-sprite');
+  const textEl = document.getElementById('capture-text');
+  const btnsEl = document.getElementById('capture-btns');
+  title.textContent = canCapture ? '⚡ MEGA CLASH CAPTURE!' : '⚡ MEGA CLASH CLEAR!';
+  title.style.color = canCapture ? '#00e676' : '#69f0ae';
+  // Show base form sprite in capture screen
+  const spriteUrl = isShiny
+    ? `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${mon.id}.png`
+    : `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${mon.id}.png`;
+  const BASE_NAMES = {254:'Sceptile',260:'Swampert',257:'Blaziken',94:'Gengar',306:'Aggron',445:'Garchomp'};
+  const baseName = BASE_NAMES[mon.id] || mon.name.replace(/^Mega\s+/i,'');
+  spriteEl.innerHTML = `<img src="${spriteUrl}" width="110" height="110" style="image-rendering:pixelated;filter:drop-shadow(0 0 16px rgba(0,230,118,0.8))${isShiny?' drop-shadow(0 0 24px rgba(255,215,0,1))':''}">`;
+  if(canCapture) {
+    textEl.innerHTML = `<div style="font-size:18px;color:#69f0ae;margin-bottom:4px">${isShiny?'✨ SHINY ':''}<b>${baseName}</b></div><div style="color:var(--text2);margin-bottom:4px">Lv.${MC_FIXED_LEVEL} wants to join!</div>`;
+    btnsEl.innerHTML = `<button class="btn" style="border-color:#00e676;color:#00e676" onclick="captureMCPokemon(${mon.id},'${mon.name}','${mon.types.join(',')}',${isShiny},${mon._mcMegaSpriteId||mon.id},'${mon._mcStone||''}')">🎯 Capture!</button><button class="btn" onclick="skipMCCapture()">Pass</button>`;
+  } else {
+    textEl.innerHTML = `<div style="font-size:18px;color:#69f0ae;margin-bottom:4px"><b>${baseName}</b> fled!</div>`;
+    btnsEl.innerHTML = `<button class="btn" style="border-color:#00e676;color:#00e676;width:100%" onclick="skipMCCapture()">Continue</button>`;
+  }
+  overlay.classList.add('active');
+}
+
+async function captureMCPokemon(id, name, typesStr, isShiny, megaSpriteId, stone) {
+  document.getElementById('capture-overlay').classList.remove('active');
+  const types = typesStr.split(',');
+  // Capture the BASE form (Gengar, Aggron, etc.) — not the mega
+  const BASE_NAMES = {254:'Sceptile',260:'Swampert',257:'Blaziken',94:'Gengar',306:'Aggron',445:'Garchomp'};
+  const baseName = BASE_NAMES[id] || name.replace(/^Mega\s+/i,'');
+  const pk = newPokemonEntry(id, baseName, types, MC_FIXED_LEVEL, isShiny);
+  pk.ivs = generateHighIVs();
+  pk.stats = await fetchPokemonStats(id);
+  pk.statsLoaded = true;
+  pk.currentHp = getMaxHp(pk);
+  gameState.box.push(pk);
+  checkAndAnnounceCosmic(pk);
+  addLog(`${isShiny?'✨ SHINY ':''} ${baseName} captured from Mega Clash!`, isShiny ? 'log-shiny' : 'log-evolve');
+  toast(`${isShiny?'✨ SHINY ':''} ${baseName} captured!`, 4000);
+  renderAll();
+  showGachaResult(pk);
+  setTimeout(() => {
+    const savedRoad = { ...gameState.road };
+    const nextSpawn = savedRoad.active ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
+    nextSpawn();
+  }, 500);
+}
+
+function skipMCCapture() {
+  document.getElementById('capture-overlay').classList.remove('active');
+  const savedRoad = { ...gameState.road };
+  const nextSpawn = savedRoad.active ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
+  setTimeout(nextSpawn, 600);
+  renderAll();
+}
+
+function handleMCFailed() {
+  const savedRoad = mcEnemy?._mcSavedRoad;
+  mcBattleActive = false;
+  bossBattleActive = false;
+  currentEnemy = null;
+  mcEnemy = null;
+  document.getElementById('arena').style.background = '';
+  if(savedRoad && savedRoad.active) { gameState.road = savedRoad; document.getElementById('arena').classList.add('road-mode'); }
+  addLog('💀 Mega Clash challenger wiped your team!', 'log-dmg');
+  toast('💀 Defeated in Mega Clash!', 4000);
+  saveGame();
+  gameState.team.forEach(p => { p.currentHp = Math.max(1, Math.floor(getMaxHp(p)*0.25)); });
+  gameState.currentFighterIdx = 0;
+  playerAttackCooldown = 0;
+  enemyAttackCooldown = 0;
+  renderAll();
+  const nextSpawn = (savedRoad && savedRoad.active) ? (savedRoad.mode === 'farm' ? spawnFarmEnemy : spawnRoadEnemy) : spawnEnemy;
+  setTimeout(nextSpawn, 2500);
+}
+
 async function doPokemonGacha(count) {
   const cost = count === 1 ? 5 : 40;
   if(gameState.gems < cost) { toast('Not enough Gems! 💎'); return; }
@@ -4161,7 +4476,7 @@ async function doEpicItemGacha(count) {
     } else if(roll < 0.45) {
       // ~35% epic roll - exclude meteorite (boss-only drop) and max_candy (handled above)
       wasEpic = true;
-      const epicPool = EPIC_ITEMS.filter(e => e.id !== 'meteorite' && e.id !== 'max_candy' && e.id !== 'origin_orb' && e.id !== 'dna_splicer' && e.id !== 'heros_sword' && e.id !== 'heros_shield' && e.id !== 'sss_candy' && e.id !== 'sceptilite' && e.id !== 'swampertite' && e.id !== 'blazikenite');
+      const epicPool = EPIC_ITEMS.filter(e => e.id !== 'meteorite' && e.id !== 'max_candy' && e.id !== 'origin_orb' && e.id !== 'dna_splicer' && e.id !== 'heros_sword' && e.id !== 'heros_shield' && e.id !== 'sss_candy' && e.id !== 'sceptilite' && e.id !== 'swampertite' && e.id !== 'blazikenite' && e.id !== 'gengarite' && e.id !== 'aggronite' && e.id !== 'garchompite');
       item = Math.random() < 0.60 ? EPIC_ITEMS.find(e=>e.id==='rare_candy') : epicPool[Math.floor(Math.random()*epicPool.length)];
     } else {
       item = ITEMS[Math.floor(Math.random()*ITEMS.length)];
@@ -4273,41 +4588,23 @@ async function doPremiumItemGacha() {
   updateResourceUI();
 
   const bossOnly = new Set(['meteorite','origin_orb','dna_splicer','heros_sword','heros_shield']);
-  const epicPool  = EPIC_ITEMS.filter(e => !bossOnly.has(e.id) && e.id !== 'max_candy' && e.id !== 'rare_candy' && e.id !== 'sss_candy' && e.id !== 'sceptilite' && e.id !== 'swampertite' && e.id !== 'blazikenite');
+  const epicPool  = EPIC_ITEMS.filter(e => !bossOnly.has(e.id) && e.id !== 'max_candy' && e.id !== 'rare_candy' && e.id !== 'sss_candy' && e.id !== 'sceptilite' && e.id !== 'swampertite' && e.id !== 'blazikenite' && e.id !== 'gengarite' && e.id !== 'aggronite' && e.id !== 'garchompite');
   const sssCandy  = EPIC_ITEMS.find(e => e.id === 'sss_candy');
   const maxCandy  = EPIC_ITEMS.find(e => e.id === 'max_candy');
   const rareCandy = EPIC_ITEMS.find(e => e.id === 'rare_candy');
-  const sceptilite  = EPIC_ITEMS.find(e => e.id === 'sceptilite');
-  const swampertite = EPIC_ITEMS.find(e => e.id === 'swampertite');
-  const blazikenite = EPIC_ITEMS.find(e => e.id === 'blazikenite');
 
   const gotten = [];
   for(let i = 0; i < 10; i++) {
     const roll = Math.random();
     let item, tier;
-    if(roll < 0.007)       { item = sceptilite;  tier = 'mega';   }
-    else if(roll < 0.014)  { item = swampertite; tier = 'mega';   }
-    else if(roll < 0.021)  { item = blazikenite; tier = 'mega';   }
-    else if(roll < 0.028)  { item = sssCandy;   tier = 'sss';    }
-    else if(roll < 0.078)  { item = maxCandy;   tier = 'epic';   }
-    else if(roll < 0.33)   { item = epicPool[Math.floor(Math.random()*epicPool.length)]; tier = 'epic'; }
-    else if(roll < 0.63)   { item = rareCandy;  tier = 'candy';  }
+    if(roll < 0.007)       { item = sssCandy;   tier = 'sss';    }
+    else if(roll < 0.062)  { item = maxCandy;   tier = 'epic';   }
+    else if(roll < 0.35)   { item = epicPool[Math.floor(Math.random()*epicPool.length)]; tier = 'epic'; }
+    else if(roll < 0.65)   { item = rareCandy;  tier = 'candy';  }
     else                   { item = ITEMS[Math.floor(Math.random()*ITEMS.length)]; tier = 'normal'; }
 
-    if(tier === 'mega') {
-      // Each mega stone gets a unique instance ID with a pre-rolled bonus stat (attack% or speed% only)
-      const BONUS_STATS = ['attack','speed'];
-      const bonusStat = BONUS_STATS[Math.floor(Math.random()*BONUS_STATS.length)];
-      const bonusPct  = +(0.04 + Math.random() * 0.06).toFixed(3); // 4–10%
-      const instanceId = item.id + '_' + Date.now() + '_' + Math.floor(Math.random()*9999);
-      if(!gameState.megaStoneInstances) gameState.megaStoneInstances = {};
-      gameState.megaStoneInstances[instanceId] = { base: item.id, stat: bonusStat, pct: bonusPct };
-      gameState.inventory[instanceId] = 1;
-      gotten.push({...item, id: instanceId, tier, _bonusStat: bonusStat, _bonusPct: bonusPct, _instanceId: instanceId});
-    } else {
-      gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
-      gotten.push({...item, tier});
-    }
+    gameState.inventory[item.id] = (gameState.inventory[item.id] || 0) + 1;
+    gotten.push({...item, tier});
   }
   renderAll();
 
@@ -4317,11 +4614,21 @@ async function doPremiumItemGacha() {
   document.getElementById('modal-title').textContent = '\u2b50 Premium Items!';
   document.getElementById('modal-content').innerHTML = `
     <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:8px;max-height:380px;overflow-y:auto">
-      ${gotten.map(it => `<div style="text-align:center;background:${bg[it.tier]};border:1px solid ${bdr[it.tier]};border-radius:8px;padding:10px;width:90px">
-        <div style="font-size:34px">${it.emoji}</div>
-        <div style="font-family:'Press Start 2P';font-size:5px;color:${clr[it.tier]};margin-top:4px">${it.name}</div>
-        ${it.tier==='sss'?'<div style="font-size:10px;color:#ffd700;margin-top:2px">SSS CANDY!</div>':it.tier==='mega'?`<div style="font-size:10px;color:#00e676;margin-top:2px">MEGA STONE!</div>${it._bonusStat?`<div style="font-size:9px;color:#b9f6ca;margin-top:1px">+${Math.round(it._bonusPct*100)}% ${it._bonusStat.replace('special-attack','Sp.Atk').replace('special-defense','Sp.Def')}</div>`:''}`:it.tier==='epic'?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
-      </div>`).join('')}
+      ${(()=>{
+        const MEGA_SPRITES={sceptilite:'sceptilite',swampertite:'swampertite',blazikenite:'blazikenite',gengarite:'gengarite',aggronite:'aggronite',garchompite:'garchompite'};
+        return gotten.map(it => {
+          const baseId = it._instanceId ? getMegaStoneBaseId(it.id) : it.id;
+          const megaKey = MEGA_SPRITES[baseId];
+          const icon = megaKey
+            ? `<img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${megaKey}.png" style="width:52px;height:52px;image-rendering:pixelated">`
+            : `<div style="font-size:34px">${it.emoji}</div>`;
+          return `<div style="text-align:center;background:${bg[it.tier]};border:1px solid ${bdr[it.tier]};border-radius:8px;padding:10px;width:90px">
+            ${icon}
+            <div style="font-family:'Press Start 2P';font-size:5px;color:${clr[it.tier]};margin-top:4px">${it.name}</div>
+            ${it.tier==='sss'?'<div style="font-size:10px;color:#ffd700;margin-top:2px">SSS CANDY!</div>':it.tier==='mega'?`<div style="font-size:10px;color:#00e676;margin-top:2px">MEGA STONE!</div>${it._bonusStat?`<div style="font-size:9px;color:#b9f6ca;margin-top:1px">+${Math.round(it._bonusPct*100)}% ${it._bonusStat.replace('special-attack','Sp.Atk').replace('special-defense','Sp.Def')}</div>`:''}`:it.tier==='epic'?'<div style="font-size:10px;color:#e040fb">EPIC!</div>':''}
+          </div>`;
+        }).join('');
+      })()}
     </div>
     <button class="btn" onclick="closeModal()" style="width:100%;margin-top:12px">Nice haul!</button>
   `;
@@ -4453,12 +4760,18 @@ function getBoxSorted() {
     });
     case 'type': return arr.sort((a,b)=>dir*a.types[0].localeCompare(b.types[0]));
     case 'stats': return arr.sort((a,b)=>{
-      const gradeOrder = {'SS':7,'S':6,'A':5,'B':4,'C':3,'D':2,'F':1};
+      const gradeOrder = {'SSS':9,'SS':7,'S':6,'A':5,'B':4,'C':3,'D':2,'F':1};
       const overallGrade = p => {
         const ivs = p.ivs || {};
         const vals = Object.values(ivs);
         if(!vals.length) return 0;
         const avg = vals.reduce((s,v)=>s+v,0) / vals.length;
+        const isMega = isMegaRayquaza(p); const isOrigin = isOriginGiratina(p);
+        const isFused = isDNAFused(p); const isCrownedForm = isCrownedZacian(p) || isCrownedZamazenta(p);
+        const isMegaStart = isMegaSceptile(p)||isMegaSwampert(p)||isMegaBlaziken(p);
+        const isMegaNew = isMegaGengar(p)||isMegaAggron(p)||isMegaGarchomp(p);
+        const hasSSStat = (isMega||isOrigin||isFused||p._naturalSSS||isCrownedForm||p._sssUsed||p._isEnvy||isMegaStart||isPerfectedZygarde(p)||isMegaNew) && vals.some(iv=>iv>=31);
+        if(hasSSStat) return gradeOrder['SSS'];
         return gradeOrder[getStatGrade(Math.round(avg)).label] || 0;
       };
       const diff = (overallGrade(b) - overallGrade(a)) * dir;
@@ -4577,7 +4890,7 @@ function showPokemonModal(pk) {
         <div style="font-size:14px;color:var(--text2)">EXP: ${pk.exp} / ${pk.expToNext}</div>
         <div style="font-size:13px;color:var(--text2)">OT: <span style="color:var(--gold)">${pk.ot || 'Unknown'}</span></div>
         ${evo ? `<div style="font-size:13px;color:var(--accent);margin-top:4px;display:flex;align-items:center;gap:8px">→ Evolves into ${evo.name} at Lv.${evo.level}${pk.level >= evo.level && !pk._noEvolve ? ` <button class="btn" style="font-size:11px;padding:2px 8px;border-color:#ab47bc;color:#ab47bc" onclick="forceEvolve(${pk.uid});closeModal()">✨ Evolve!</button>` : ''}</div>` : ''}
-        ${equippedItem ? `<div style="margin-top:4px">Held: ${equippedItem.emoji} ${equippedItem.name}</div>` : ''}
+        ${equippedItem ? `<div style="margin-top:4px">Held: ${getItemIcon(equippedItem,18)} ${equippedItem.name}</div>` : ''}
       </div>
     </div>
     ${pk.stats ? renderMiniStats(pk) : ''}
@@ -4638,7 +4951,7 @@ function showPokemonInfoCard(pk) {
         <div style="font-size:16px;color:var(--gold)">Lv. ${pk.level}</div>
         <div style="font-size:14px;color:var(--text2)">HP: ${Math.max(0,pk.currentHp)} / ${maxHp}</div>
         ${evo ? `<div style="font-size:13px;color:var(--accent);display:flex;align-items:center;gap:8px">→ ${evo.name} @ Lv.${evo.level}${pk.level >= evo.level && !pk._noEvolve ? ` <button class="btn" style="font-size:11px;padding:2px 8px;border-color:#ab47bc;color:#ab47bc" onclick="forceEvolve(${pk.uid});closeModal()">✨ Evolve!</button>` : ''}</div>` : ''}
-        ${equippedItem ? `<div style="font-size:14px;margin-top:4px">${equippedItem.emoji} <span style="color:var(--gold)">${equippedItem.name}</span></div>` : ''}
+        ${equippedItem ? `<div style="margin-top:4px">${getItemIcon(equippedItem,18)} <span style="color:var(--gold)">${equippedItem.name}</span></div>` : ''}
       </div>
     </div>
     ${pk.stats ? renderMiniStats(pk) : '<div style="color:var(--text2);font-size:13px">Stats not yet loaded</div>'}
@@ -4669,13 +4982,15 @@ function renderMiniStats(pk) {
   const isFused = isDNAFused(pk);
   const isCrowned = isCrownedZacian(pk) || isCrownedZamazenta(pk);
   const isMegaStarter = isMegaSceptile(pk) || isMegaSwampert(pk) || isMegaBlaziken(pk);
-  const isSpecialForm = isMega || isOrigin || isFused || pk._naturalSSS || isCrowned || pk._sssUsed || pk._isEnvy || isMegaStarter || isPerfectedZygarde(pk);
+  const isMegaNew = isMegaGengar(pk) || isMegaAggron(pk) || isMegaGarchomp(pk);
+  const isAnyMega = isMegaStarter || isMegaNew;
+  const isSpecialForm = isMega || isOrigin || isFused || pk._naturalSSS || isCrowned || pk._sssUsed || pk._isEnvy || isAnyMega || isPerfectedZygarde(pk);
 
   const hasSSStat = isSpecialForm && Object.values(ivs).some(iv => iv >= 31);
   const displayGrade = hasSSStat ? {label:'SSS', color:'#ff69b4', isSS:true, isSSS:true} : overallGrade;
-  const formLabel = isMega ? ' <span style="color:#ff8c00">MEGA</span>' : isOrigin ? ' <span style="color:#ce93d8">ORIGIN</span>' : isFused ? ' <span style="color:#00e5ff">FUSED</span>' : isCrowned ? ' <span style="color:#ffd700">CROWNED</span>' : isMegaStarter ? ' <span style="color:#00e676;text-shadow:0 0 6px #00e676">MEGA</span>' : isPerfectedZygarde(pk) ? ' <span style="color:#69f0ae">PERFECTED</span>' : '';
-  const borderColor = isMega ? 'rgba(255,100,0,0.6)' : isOrigin ? 'rgba(156,39,176,0.6)' : isFused ? 'rgba(0,229,255,0.6)' : isCrowned ? 'rgba(255,215,0,0.6)' : isMegaStarter ? 'rgba(0,230,118,0.5)' : isPerfectedZygarde(pk) ? 'rgba(105,240,174,0.5)' : cosmic ? 'rgba(0,255,255,0.3)' : 'rgba(255,255,255,0.1)';
-  const glow = isMega ? ';box-shadow:0 0 16px rgba(255,50,0,0.3)' : isOrigin ? ';box-shadow:0 0 16px rgba(156,39,176,0.4)' : isFused ? ';box-shadow:0 0 16px rgba(0,229,255,0.3)' : isCrowned ? ';box-shadow:0 0 16px rgba(255,215,0,0.35)' : isMegaStarter ? ';box-shadow:0 0 16px rgba(0,230,118,0.25),0 0 32px rgba(0,200,80,0.15)' : isPerfectedZygarde(pk) ? ';box-shadow:0 0 16px rgba(105,240,174,0.35)' : '';
+  const formLabel = isMega ? ' <span style="color:#ff8c00">MEGA</span>' : isOrigin ? ' <span style="color:#ce93d8">ORIGIN</span>' : isFused ? ' <span style="color:#00e5ff">FUSED</span>' : isCrowned ? ' <span style="color:#ffd700">CROWNED</span>' : isAnyMega ? ' <span style="color:#00e676;text-shadow:0 0 6px #00e676">MEGA</span>' : isPerfectedZygarde(pk) ? ' <span style="color:#69f0ae">PERFECTED</span>' : '';
+  const borderColor = isMega ? 'rgba(255,100,0,0.6)' : isOrigin ? 'rgba(156,39,176,0.6)' : isFused ? 'rgba(0,229,255,0.6)' : isCrowned ? 'rgba(255,215,0,0.6)' : isAnyMega ? 'rgba(0,230,118,0.5)' : isPerfectedZygarde(pk) ? 'rgba(105,240,174,0.5)' : cosmic ? 'rgba(0,255,255,0.3)' : 'rgba(255,255,255,0.1)';
+  const glow = isMega ? ';box-shadow:0 0 16px rgba(255,50,0,0.3)' : isOrigin ? ';box-shadow:0 0 16px rgba(156,39,176,0.4)' : isFused ? ';box-shadow:0 0 16px rgba(0,229,255,0.3)' : isCrowned ? ';box-shadow:0 0 16px rgba(255,215,0,0.35)' : isAnyMega ? ';box-shadow:0 0 16px rgba(0,230,118,0.25),0 0 32px rgba(0,200,80,0.15)' : isPerfectedZygarde(pk) ? ';box-shadow:0 0 16px rgba(105,240,174,0.35)' : '';
 
   let html = `<div style="background:rgba(0,0,0,0.3);border:1px solid ${borderColor};border-radius:8px;padding:10px 12px;margin-bottom:6px${glow}">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -4702,8 +5017,8 @@ function renderMiniStats(pk) {
     const baseGrade = getStatGrade(iv);
     // SSS Candy: only the chosen stat becomes SSS; for mega/origin all SS stats do
     const isSSSCandyStat = pk._sssUsed && pk._sssStat === s.stat.name;
-    const becomeSSS = (isSpecialForm && !pk._sssUsed && baseGrade.isSS) || (pk._sssUsed && baseGrade.isSS && (isCrownedZacian(pk)||isCrownedZamazenta(pk)||pk._naturalSSS||isMega||isOrigin||isFused||isMegaStarter)) || isSSSCandyStat;
-    const becomeMEGA = isMegaStarter && pk._sssUsed && pk._sssStat === s.stat.name; // SSS candy stat on mega starter → MEGA tier
+    const becomeSSS = (isSpecialForm && !pk._sssUsed && baseGrade.isSS) || (pk._sssUsed && baseGrade.isSS && (isCrownedZacian(pk)||isCrownedZamazenta(pk)||pk._naturalSSS||isMega||isOrigin||isFused||isAnyMega)) || isSSSCandyStat;
+    const becomeMEGA = isAnyMega && pk._sssUsed && pk._sssStat === s.stat.name; // SSS candy stat on any mega → MEGA tier
     const grade = becomeMEGA ? {label:'MEGA', color:'#00e676', isSS:true, isSSS:true} : becomeSSS ? {label:'SSS', color:'#ff69b4', isSS:true, isSSS:true} : baseGrade;
     const isSSBar = becomeSSS || becomeMEGA;
     const effective = Math.floor(((s.base_stat * 2 + iv) * pk.level / 100) + (s.stat.name==='hp' ? pk.level+10 : 5));
@@ -4712,7 +5027,7 @@ function renderMiniStats(pk) {
     const rainbowBar = 'linear-gradient(90deg,#ff0000,#ff8c00,#ffd700,#00e676,#00b0ff,#e040fb,#ff0000)';
     const barColor = isSSBar ? rainbowBar : (statColors[s.stat.name] || 'var(--accent)');
     const barBg = isSSBar ? 'rgba(255,140,0,0.15)' : 'rgba(255,255,255,0.08)';
-    const valColor = isMega ? '#ff8c00' : isOrigin ? '#ce93d8' : isFused ? '#00e5ff' : isCrowned ? '#ffd700' : isMegaStarter ? '#00e676' : 'var(--gold)';
+    const valColor = isMega ? '#ff8c00' : isOrigin ? '#ce93d8' : isFused ? '#00e5ff' : isCrowned ? '#ffd700' : isAnyMega ? '#00e676' : 'var(--gold)';
     const mult = pk._isEnvy ? '×1.2' : isSpecialForm ? '×2' : '';
     html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
       <div style="width:32px;font-size:12px;color:var(--text2);flex-shrink:0">${name}</div>
@@ -4782,7 +5097,7 @@ function showItemModal(item) {
           <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" width="52" height="52">
           <span class="cname">${p.name}</span>
           <span class="clevel">Lv.${p.level}</span>
-          ${eq ? `<div style="font-size:13px">${eqItem?.emoji||''}</div>` : ''}
+          ${eq ? `<div style="font-size:13px">${getItemIcon(eqItem,18)}</div>` : ''}
         </div>`;
       }).join('')}
     </div>
@@ -4793,7 +5108,14 @@ function showItemModal(item) {
 function showMegaStoneInstanceModal(instanceId) {
   const data = gameState.megaStoneInstances && gameState.megaStoneInstances[instanceId];
   if(!data || (gameState.inventory[instanceId]||0) === 0) return;
-  const STONE_INFO = { sceptilite:{emoji:'💚',name:'Sceptilite',pokeName:'Sceptile',pokeId:254}, swampertite:{emoji:'💙',name:'Swampertite',pokeName:'Swampert',pokeId:260}, blazikenite:{emoji:'🔥',name:'Blazikenite',pokeName:'Blaziken',pokeId:257} };
+  const STONE_INFO = {
+    sceptilite:  {emoji:'💚',name:'Sceptilite',  pokeName:'Sceptile',  pokeId:254, megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sceptilite.png'},
+    swampertite: {emoji:'💙',name:'Swampertite', pokeName:'Swampert',  pokeId:260, megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/swampertite.png'},
+    blazikenite: {emoji:'🔥',name:'Blazikenite', pokeName:'Blaziken',  pokeId:257, megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/blazikenite.png'},
+    gengarite:   {emoji:'👻',name:'Gengarite',   pokeName:'Gengar',    pokeId:94,  megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gengarite.png'},
+    aggronite:   {emoji:'🪨',name:'Aggronite',   pokeName:'Aggron',    pokeId:306, megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/aggronite.png'},
+    garchompite: {emoji:'🦈',name:'Garchompite', pokeName:'Garchomp',  pokeId:445, megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/garchompite.png'},
+  };
   const STAT_LABELS = {'attack':'Attack','special-attack':'Sp. Attack','defense':'Defense','special-defense':'Sp. Defense','speed':'Speed'};
   const info = STONE_INFO[data.base];
   if(!info) return;
@@ -4801,7 +5123,7 @@ function showMegaStoneInstanceModal(instanceId) {
   document.getElementById('modal-title').textContent = `${info.emoji} ${info.name}`;
   document.getElementById('modal-content').innerHTML = `
     <div style="text-align:center;margin-bottom:12px">
-      <div style="font-size:52px;margin-bottom:6px">${info.emoji}</div>
+      <img src="${info.megaSprite}" style="width:80px;height:80px;image-rendering:pixelated;margin-bottom:4px">
       <div style="font-size:14px;color:var(--text2);margin-bottom:8px">Triggers Mega Evolution on ${info.pokeName}.</div>
       <div style="background:rgba(0,230,118,0.12);border:1px solid #00e676;border-radius:8px;padding:8px 14px;margin-bottom:10px;display:inline-block">
         <div style="font-family:'Press Start 2P';font-size:7px;color:#00e676;margin-bottom:2px">BONUS STAT ROLL</div>
@@ -4817,7 +5139,7 @@ function showMegaStoneInstanceModal(instanceId) {
           <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" width="52" height="52">
           <span class="cname">${p.name}</span>
           <span class="clevel">Lv.${p.level}</span>
-          ${eq ? `<div style="font-size:13px">${eqItem?.emoji||''}</div>` : ''}
+          ${eq ? `<div style="font-size:13px">${getItemIcon(eqItem,18)}</div>` : ''}
         </div>`;
       }).join('') || `<div style="color:var(--text2);font-size:14px;padding:10px">No ${info.pokeName} in your box!</div>`}
     </div>
@@ -4829,14 +5151,14 @@ function showMegaStoneInstanceModal(instanceId) {
 function trashMegaStoneInstance(instanceId) {
   if(!gameState.megaStoneInstances || !gameState.megaStoneInstances[instanceId]) return;
   const data = gameState.megaStoneInstances[instanceId];
-  const STONE_INFO = { sceptilite:{name:'Sceptilite',emoji:'💚'}, swampertite:{name:'Swampertite',emoji:'💙'}, blazikenite:{name:'Blazikenite',emoji:'🔥'} };
+  const STONE_INFO = { sceptilite:{name:'Sceptilite',emoji:'💚',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/sceptilite.png'}, swampertite:{name:'Swampertite',emoji:'💙',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/swampertite.png'}, blazikenite:{name:'Blazikenite',emoji:'🔥',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/blazikenite.png'}, gengarite:{name:'Gengarite',emoji:'👻',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/gengarite.png'}, aggronite:{name:'Aggronite',emoji:'🪨',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/aggronite.png'}, garchompite:{name:'Garchompite',emoji:'🦈',megaSprite:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/garchompite.png'} };
   const info = STONE_INFO[data.base] || {name:'Mega Stone',emoji:'💎'};
   const STAT_LABELS = {'attack':'Atk','special-attack':'Sp.Atk','defense':'Def','special-defense':'Sp.Def','speed':'Speed'};
   const bonusLabel = `+${Math.round(data.pct*100)}% ${STAT_LABELS[data.stat]||data.stat}`;
   document.getElementById('modal-title').textContent = `🗑️ ${info.name}`;
   document.getElementById('modal-content').innerHTML = `
     <div style="text-align:center;padding:10px">
-      <div style="font-size:50px;margin-bottom:8px">${info.emoji}</div>
+      <img src="${info.megaSprite||''}" style="width:64px;height:64px;image-rendering:pixelated;margin-bottom:6px;${!info.megaSprite?'display:none':''}">
       <div style="color:#69f0ae;font-size:16px;margin-bottom:6px">${bonusLabel}</div>
       <div style="color:var(--text2);font-size:13px;margin-bottom:6px">Triggers Mega Evolution with a stat bonus.</div>
       <div style="color:#ef9a9a;font-size:13px;margin-bottom:16px">⚠️ Cannot be traded. This cannot be undone!</div>
@@ -4852,7 +5174,7 @@ function trashMegaStoneInstance(instanceId) {
 function doTrashMegaStoneInstance(instanceId) {
   if(!gameState.megaStoneInstances || !gameState.megaStoneInstances[instanceId]) { closeModal(); return; }
   const data = gameState.megaStoneInstances[instanceId];
-  const STONE_INFO = { sceptilite:{name:'Sceptilite'}, swampertite:{name:'Swampertite'}, blazikenite:{name:'Blazikenite'} };
+  const STONE_INFO = { sceptilite:{name:'Sceptilite'}, swampertite:{name:'Swampertite'}, blazikenite:{name:'Blazikenite'}, gengarite:{name:'Gengarite'}, aggronite:{name:'Aggronite'}, garchompite:{name:'Garchompite'} };
   const name = STONE_INFO[data.base]?.name || 'Mega Stone';
   // Unequip from any pokemon currently holding it
   gameState.box.forEach(p => { if(gameState.equippedItems[p.uid] === instanceId) delete gameState.equippedItems[p.uid]; });
@@ -5077,6 +5399,57 @@ function equipItem(itemId, uid) {
     }
   }
 
+  // Gengarite: only Gengar; check boss team limit
+  if(baseItemId === 'gengarite') {
+    if(!pokemon || pokemon.id !== 94) {
+      toast('👻 Gengarite can only be held by Gengar!', 3000);
+      return;
+    }
+    const onTeam = gameState.team.find(p => p.uid === uid);
+    if(onTeam && countBossOnTeam() >= MAX_BOSS_ON_TEAM) {
+      toast(`⚠️ Max ${MAX_BOSS_ON_TEAM} Boss/Legendary Pokémon per team! Remove one first.`, 3500);
+      return;
+    }
+    if(onTeam && countMegaStartersOnTeam() >= 1) {
+      toast('⚠️ Only 1 Mega Pokémon per team!', 3000);
+      return;
+    }
+  }
+
+  // Aggronite: only Aggron; check boss team limit
+  if(baseItemId === 'aggronite') {
+    if(!pokemon || pokemon.id !== 306) {
+      toast('🪨 Aggronite can only be held by Aggron!', 3000);
+      return;
+    }
+    const onTeam = gameState.team.find(p => p.uid === uid);
+    if(onTeam && countBossOnTeam() >= MAX_BOSS_ON_TEAM) {
+      toast(`⚠️ Max ${MAX_BOSS_ON_TEAM} Boss/Legendary Pokémon per team! Remove one first.`, 3500);
+      return;
+    }
+    if(onTeam && countMegaStartersOnTeam() >= 1) {
+      toast('⚠️ Only 1 Mega Pokémon per team!', 3000);
+      return;
+    }
+  }
+
+  // Garchompite: only Garchomp; check boss team limit
+  if(baseItemId === 'garchompite') {
+    if(!pokemon || pokemon.id !== 445) {
+      toast('🦈 Garchompite can only be held by Garchomp!', 3000);
+      return;
+    }
+    const onTeam = gameState.team.find(p => p.uid === uid);
+    if(onTeam && countBossOnTeam() >= MAX_BOSS_ON_TEAM) {
+      toast(`⚠️ Max ${MAX_BOSS_ON_TEAM} Boss/Legendary Pokémon per team! Remove one first.`, 3500);
+      return;
+    }
+    if(onTeam && countMegaStartersOnTeam() >= 1) {
+      toast('⚠️ Only 1 Mega Pokémon per team!', 3000);
+      return;
+    }
+  }
+
   // DNA Splicer: only Kyurem can hold it, and needs Zekrom or Reshiram on team
   if(itemId === 'dna_splicer') {
     if(!pokemon || pokemon.id !== 646) {
@@ -5199,7 +5572,7 @@ function equipItem(itemId, uid) {
   } else if(baseItemId === 'heros_shield' && pokemon?.id === 889) {
     toast(`🛡️ Zamazenta has transformed into CROWNED ZAMAZENTA! 👑`, 4000);
   } else {
-    toast(`${item?.emoji||'✨'} ${item?.name||itemId} equipped to ${pokemon?.name||'Pokémon'}!`);
+    toast(`${item?.spriteUrl ? '🔮' : (item?.emoji||'✨')} ${item?.name||itemId} equipped to ${pokemon?.name||'Pokémon'}!`);
   }
   // Auto-update any presets that contain this pokemon so they reflect the new item
   updatePresetsForPokemon(uid, itemId);
@@ -5291,7 +5664,7 @@ function unequipItem(uid) {
   delete gameState.equippedItems[uid];
   // Clear mega stone bonus from pokemon
   const pk = gameState.box.find(p=>p.uid===uid);
-  if(pk && ['sceptilite','swampertite','blazikenite'].includes(baseOld)) pk._megaStoneBonus = null;
+  if(pk && ['sceptilite','swampertite','blazikenite','gengarite','aggronite','garchompite'].includes(baseOld)) pk._megaStoneBonus = null;
   // Auto-update any presets that contain this pokemon (item cleared)
   updatePresetsForPokemon(uid, null);
   toast('Item unequipped!');
@@ -5320,6 +5693,7 @@ function isBossOrLegendary(pk) {
   if(pk._naturalSSS) return true;
   // Mega evolved starters count as bosses
   if(isMegaSceptile(pk) || isMegaSwampert(pk) || isMegaBlaziken(pk)) return true;
+  if(isMegaGengar(pk) || isMegaAggron(pk) || isMegaGarchomp(pk)) return true;
   return false;
 }
 
@@ -5330,7 +5704,7 @@ function countBossOnTeam() {
 }
 
 function countMegaStartersOnTeam() {
-  return gameState.team.filter(p => isMegaSceptile(p) || isMegaSwampert(p) || isMegaBlaziken(p)).length;
+  return gameState.team.filter(p => isMegaSceptile(p) || isMegaSwampert(p) || isMegaBlaziken(p) || isMegaGengar(p) || isMegaAggron(p) || isMegaGarchomp(p)).length;
 }
 
 function addToTeam(uid) {
@@ -5345,8 +5719,8 @@ function addToTeam(uid) {
     return;
   }
   // Mega starter cap: max 1 per team
-  if((isMegaSceptile(pk) || isMegaSwampert(pk) || isMegaBlaziken(pk)) && countMegaStartersOnTeam() >= 1) {
-    toast('⚠️ Only 1 Mega Starter per team!', 3000);
+  if((isMegaSceptile(pk) || isMegaSwampert(pk) || isMegaBlaziken(pk) || isMegaGengar(pk) || isMegaAggron(pk) || isMegaGarchomp(pk)) && countMegaStartersOnTeam() >= 1) {
+    toast('⚠️ Only 1 Mega Pokémon per team!', 3000);
     return;
   }
   // Block duplicate species on team (with special Kyurem/Zekrom/Reshiram fusion rules)
@@ -5451,7 +5825,7 @@ function showAddToTeamPicker() {
     return `<div onclick="addToTeam(${p.uid});closeModal();renderAll();" style="display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);cursor:pointer;margin-bottom:4px;transition:background 0.15s" onmouseover="this.style.background='rgba(79,195,247,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
       <img src="${getSpriteUrl(p.id, p.isShiny, p.uid)}" width="40" height="40" style="image-rendering:pixelated;flex-shrink:0">
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px">${cosmic?'🌌 ':''}${p.isShiny&&!cosmic?'★ ':''}${nameHtml} ${equippedItem?equippedItem.emoji:''}</div>
+        <div style="font-size:13px">${cosmic?'🌌 ':''}${p.isShiny&&!cosmic?'★ ':''}${nameHtml} ${equippedItem?getItemIcon(equippedItem,16):''}</div>
         <div style="font-size:12px;color:var(--text2)">Lv.${p.level} · ${p.types.map(t=>`<span class="type-badge" style="background:${TYPE_COLORS[t]};font-size:9px">${t}</span>`).join(' ')}</div>
       </div>
       <div style="flex-shrink:0">${gradeBadge}</div>
@@ -5816,7 +6190,7 @@ function getPresetSpriteUrl(p) {
   return getSpriteUrl(p.id, p.isShiny, p.uid);
 }
 
-const FORM_ITEMS = new Set(['dna_splicer','meteorite','origin_orb','heros_sword','heros_shield','sceptilite','swampertite','blazikenite']);
+const FORM_ITEMS = new Set(['dna_splicer','meteorite','origin_orb','heros_sword','heros_shield','sceptilite','swampertite','blazikenite','gengarite','aggronite','garchompite']);
 
 // Returns the name of the preset that locks this pokemon's current form, or null if none.
 // Locks if: pokemon is in a preset with a form item saved, OR pokemon is in any preset
@@ -6123,7 +6497,7 @@ function trashItem(itemId) {
       <div style="color:var(--text2);margin-bottom:8px">${item.desc}</div>
       <div style="margin-bottom:14px">You have ×${count}.</div>
       <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        ${ONLINE_UNTRADABLE.has(itemId) ? '' : `<button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeForItem('${itemId}')">🔄 Trade</button>`}
+        ${!(['rare_candy','max_candy','sss_candy'].includes(itemId)) ? `<button class="btn" style="border-color:#00c853;color:#69f0ae" onclick="closeModal();openTradeForItem('${itemId}')">🔄 Trade</button>` : ''}
         <button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',1)">🗑️ Trash ×1</button>
         ${count>1?`<button class="btn" style="border-color:#ef5350;color:#ef5350" onclick="doTrashItem('${itemId}',${count})">🗑️ Trash all ×${count}</button>`:''}
         <button class="btn gold" onclick="closeModal()">Cancel</button>
@@ -6225,6 +6599,15 @@ function renderRoadUI() {
         <div class="vr-reward">~30% capture · Shiny 1/50 · Infinite fights</div>
         <button class="btn" style="border-color:#ffd700;color:#ffd700;width:100%;margin-top:8px">⚔️ CHALLENGE (80💎)</button>
       </div>
+      <div class="victory-road-card" onclick="startMegaClash()" style="border-color:#00e676;background:linear-gradient(135deg,rgba(0,40,20,0.85),rgba(0,15,8,0.6));box-shadow:0 0 18px rgba(0,230,118,0.15)">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <div class="vr-title" style="color:#00e676;margin:0">⚡ MEGA CLASH — Lv.270</div>
+          <div style="font-family:'Press Start 2P';font-size:5px;color:#00e676;background:rgba(0,230,118,0.15);border:1px solid rgba(0,230,118,0.5);border-radius:3px;padding:2px 5px">NEW</div>
+        </div>
+        <div class="vr-subtitle" style="color:#a5d6a7">Mega Sceptile · Mega Swampert · Mega Blaziken<br>Mega Gengar · Mega Aggron · Mega Garchomp</div>
+        <div class="vr-reward" style="color:#69f0ae">~30% capture · 1% Mega Stone drop (random) · 125💎</div>
+        <button class="btn" style="border-color:#00e676;color:#00e676;width:100%;margin-top:8px">⚡ CHALLENGE (125💎)</button>
+      </div>
       <div class="road-floor-card" style="border-color:#ff6d00;background:linear-gradient(135deg,rgba(80,20,0,0.6),rgba(30,5,0,0.4))">
         <div class="road-floor-title" style="color:#ff9e40">🐉 TITAN RAYQUAZA Lv.270</div>
         <div class="road-floor-reward" style="color:#ffd700">Capture it! · Shiny 1/25 · 1% ☄️ Meteorite · Cost: 💎150</div>
@@ -6281,7 +6664,7 @@ function renderRoadUI() {
           <div class="road-floor-title" style="color:${activeEv.color};margin-bottom:0">⭐ ${activeEv.name} Lv.${activeEv.level}</div>
           <div style="font-family:'Press Start 2P';font-size:5px;background:linear-gradient(90deg,#ffd700,#ff9e40);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 1.5s linear infinite;background-size:200%;white-space:nowrap;padding-top:2px;flex-shrink:0">⭐ LIMITED</div>
         </div>
-        <div class="road-floor-reward" style="color:${activeEv.badgeColor}">${activeEv.badgeText} · No shiny · Can roll SSS naturally!</div>
+        <div class="road-floor-reward" style="color:${activeEv.badgeColor}">${activeEv.badgeText} · Shiny 1/30 · Can roll SSS naturally!</div>
         <div style="font-size:12px;color:#ff9e40;margin-top:3px">⏱ Ends in: <span style="color:#ffd700">${timerStr}</span> &nbsp;·&nbsp; Cost: ${activeEv.costLabel}</div>
         <button class="btn" style="border-color:${activeEv.borderColor};color:${activeEv.color};width:100%;margin-top:8px" onclick="startEventBossChallenge()">⚔️ CHALLENGE THE EVENT BOSS</button>
       </div>`;
@@ -6613,7 +6996,7 @@ function buildSaveData(slotName) {
       _fusedWith:p._fusedWith||null, _fusedUid:p._fusedUid||null, _isFusedInto:p._isFusedInto||null,
       _naturalSSS:p._naturalSSS||false, _noEvolve:p._noEvolve||false, _customSprite:p._customSprite||null,
       _sssUsed:p._sssUsed||false, _sssStat:p._sssStat||null, _noMega:p._noMega||false, _isBossCode:p._isBossCode||false, _isEnvy:p._isEnvy||false,
-      _zygardeForm:p._zygardeForm||null
+      _zygardeForm:p._zygardeForm||null, _isHeroGreninja:p._isHeroGreninja||false
     })),
     teamUids: gameState.team.map(p=>p.uid),
     currentFighterIdx: gameState.currentFighterIdx,
@@ -6724,7 +7107,7 @@ function loadSaveSlot(slotIdx) {
   try {
     // Stop all active battles first
     if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
-    bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
+    bossBattleActive = false; vrBattleActive = false; mcBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
     currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null; kyuremEnemy = null; zygardeEnemy = null; eventBossEnemy = null;
     battlePaused = false;
     playerAttackCooldown = 0; enemyAttackCooldown = 0;
@@ -6806,7 +7189,7 @@ function saveAndStartFresh(slotIdx) {
 function _resetGameState(trainerName, targetSlotIdx) {
   // Stop battle
   if(battleTimer) { clearInterval(battleTimer); battleTimer = null; }
-  bossBattleActive = false; vrBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
+  bossBattleActive = false; vrBattleActive = false; mcBattleActive = false; giratinaBattleActive = false; kyuremBattleActive = false; zygardeBattleActive = false; swordShieldBattleActive = false; eventBossBattleActive = false; bossStarting = false;
   currentEnemy = null; bossEnemy = null; vrEnemy = null; giratinaEnemy = null; kyuremEnemy = null; zygardeEnemy = null; eventBossEnemy = null;
   battlePaused = false; pUid = 0;
   playerAttackCooldown = 0; enemyAttackCooldown = 0;
@@ -6927,19 +7310,26 @@ function decodePokemonTrade(code) {
   } catch(e) { return null; }
 }
 
-function openTradeOverlay() {
-  document.getElementById('trade-overlay').classList.add('active');
-  renderOnlineTradeMenu();
-}
-
 function openTradeForPokemon(uid) {
-  document.getElementById('trade-overlay').classList.add('active');
+  const pk = gameState.box.find(p => p.uid === uid);
+  if(!pk) return;
+  openTradeOverlay();
   showOnlineTradeConfirm(uid);
 }
 
 function openTradeForItem(itemId) {
-  document.getElementById('trade-overlay').classList.add('active');
+  const allItems = ITEMS.concat(EPIC_ITEMS);
+  const item = allItems.find(i => i.id === itemId);
+  if(!item) return;
+  const count = gameState.inventory[itemId] || 0;
+  if(count <= 0) { toast('No more of that item!'); return; }
+  openTradeOverlay();
   showOnlineItemAmountPicker(itemId);
+}
+
+function openTradeOverlay() {
+  document.getElementById('trade-overlay').classList.add('active');
+  renderOnlineTradeMenu();
 }
 
 function closeTradeOverlay() {
@@ -7101,23 +7491,25 @@ const EVENT_BOSSES = [
     level: 270,
     bossHp: 60000,
     attackMult: 0.9,
-    canBeShiny: false,
+    canBeShiny: true,
+    shinyChance: 1/30,
     naturalSSS: true,      // SSS stats without any held item
     cost: 500,             // gems
     costLabel: '💎 500',
-    sprite: 'https://art.pixilart.com/sr21b5d994399dc.png',
-    artworkFallback: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/658.png',
+    sprite: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10116.png',
+    spriteShiny: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/10116.png',
+    artworkFallback: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10116.png',
     color: '#29b6f6',
     borderColor: '#0288d1',
     bgGradient: 'radial-gradient(ellipse at 50% 0%, rgba(0,150,220,0.4) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(0,60,100,0.5) 0%, transparent 50%), linear-gradient(180deg, #000a10 0%, #001520 40%, #00080d 100%)',
     badgeText: '🌊 THE NINJA HERO',
     badgeColor: '#81d4fa',
     flavorText: 'A Greninja who fought alongside the chosen hero.<br>Its bond transcends transformation itself.<br><br>',
-    statsText: '<span style="color:#81d4fa">60,000 HP · No shiny</span><br><span style="color:#ffd700;font-size:12px">Can roll naturally with SSS stats!</span><br>',
+    statsText: '<span style="color:#81d4fa">60,000 HP · Shiny 1/30!</span><br><span style="color:#ffd700;font-size:12px">Can roll naturally with SSS stats!</span><br>',
     logStartText: '🌊 HERO GRENINJA appeared from the mist!',
     logDefeatText: '🎉 HERO GRENINJA DEFEATED! The ninja hero acknowledges your strength!',
     logFailText: '💀 HERO GRENINJA vanished into the mist… your team couldn\'t keep up!',
-    dropText: 'Drop: Hero Greninja (No shiny · Natural SSS!)',
+    dropText: 'Drop: Hero Greninja (Shiny 1/30 · Natural SSS!)',
     rareDrop: null,        // no rare item drop
     startDate: '2025-01-01T00:00:00Z',
     endDate:   '2026-03-10T23:59:59Z',
@@ -7176,8 +7568,7 @@ function startEventBossChallenge() {
   document.getElementById('modal-title').textContent = `⭐ ${ev.name}`;
   document.getElementById('modal-content').innerHTML = `
     <div style="text-align:center;padding:8px">
-      <img src="${ev.sprite}" width="140" height="140" style="image-rendering:pixelated;filter:drop-shadow(0 0 24px ${ev.color}aa)" onerror="this.src='${ev.artworkFallback}'">
-      <div style="margin:10px 0;font-family:'Press Start 2P';font-size:8px;color:${ev.badgeColor}">${ev.badgeText}</div>
+      <img src="${ev.sprite}" width="140" height="140" style="image-rendering:pixelated;filter:drop-shadow(0 0 24px ${ev.color}aa)" onerror="this.src='${ev.artworkFallback}'">      <div style="margin:10px 0;font-family:'Press Start 2P';font-size:8px;color:${ev.badgeColor}">${ev.badgeText}</div>
       <div style="font-size:14px;color:var(--text2);margin-bottom:12px">
         ${ev.flavorText}
         <span style="color:#ffd700">${ev.dropText}</span><br>
@@ -7223,6 +7614,8 @@ async function confirmEventBoss() {
   // Use the custom sprite URL directly for battle display
   eventBossEnemy._customSprite = ev.sprite;
   eventBossEnemy._spriteFallback = ev.artworkFallback;
+  // For shiny boss sprite (displayed on the shiny catch result)
+  eventBossEnemy._customSpriteShiny = ev.spriteShiny || ev.sprite;
 
   currentEnemy = eventBossEnemy;
   eventBossBattleActive = true;
@@ -7253,14 +7646,18 @@ function handleEventBossDefeated(player) {
     addLog(ev.rareDrop.logText, 'log-cosmic');
     toast(`${ev.rareDrop.emoji} RARE DROP: ${ev.rareDrop.name}!`, 5000);
   }
-  // Drop the pokemon (never shiny if canBeShiny=false)
-  const isShiny = ev.canBeShiny && (debugGuaranteeShinyDrop || Math.random() < 1/20);
+  // Drop the pokemon (never shiny if canBeShiny=false, custom shinyChance if set)
+  const shinyProb = ev.shinyChance !== undefined ? ev.shinyChance : 1/20;
+  const isShiny = ev.canBeShiny && (debugGuaranteeShinyDrop || Math.random() < shinyProb);
   const caught = newPokemonEntry(ev.pokeId, ev.name, ev.types, ev.level, isShiny);
   caught.ivs = generateHighIVs();
   // naturalSSS on the caught pokemon is rare (~10% chance), even if the boss itself has it
   if(ev.naturalSSS && Math.random() < 0.30) caught._naturalSSS = true;
-  if(ev.sprite) caught._customSprite = ev.sprite;
+  // Set sprite: use shiny variant if caught shiny and spriteShiny exists, else normal sprite
+  if(ev.sprite) caught._customSprite = (isShiny && ev.spriteShiny) ? ev.spriteShiny : ev.sprite;
   if(ev.spriteFallback) caught._spriteFallback = ev.artworkFallback;
+  // Hero Greninja is a separate tradeable entity — give it a unique uid-based identity
+  caught._isHeroGreninja = (ev.id === 'hero_greninja');
   fetchPokemonStats(ev.pokeId).then(stats => {
     caught.stats = stats;
     caught.statsLoaded = true;
@@ -7861,7 +8258,7 @@ function renderOnlineTradeMenu() {
     </div>
     <div style="display:flex;gap:8px;margin-bottom:8px">
       <button class="btn" style="flex:1;border-color:#ffd700;color:#ffd700;font-size:16px" onclick="showOnlinePostGold()">💰 Post Gold</button>
-      <button class="btn" style="flex:1;border-color:#ab47bc;color:#ce93d8;font-size:16px" onclick="showOnlinePostGems()">💎 Post Gems</button>
+      <button class="btn" style="flex:1;border-color:#4fc3f7;color:#4fc3f7;font-size:16px" onclick="showOnlinePostGems()">💎 Post Gems</button>
     </div>
     <div style="display:flex;gap:8px">
       <button class="btn" style="flex:1;border-color:#4fc3f7;color:var(--accent);font-size:16px" onclick="showOnlineReceiveTrade()">📥 Enter Code</button>
@@ -8112,25 +8509,23 @@ function showOnlineTradePreview(code, result) {
         </div>`;
     }
   } else if (payload.type === 'gold') {
-    const amount = Math.max(1, Math.floor(payload.amount) || 1);
     previewHtml = `
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.25);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:12px">
         <span style="font-size:52px">💰</span>
         <div>
-          <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">GOLD</div>
-          <div style="font-size:22px;color:#ffd700;margin-top:4px">${amount.toLocaleString()}</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:2px">In-game currency</div>
+          <div style="font-family:'Press Start 2P';font-size:8px;color:#ffd700">GOLD TRADE</div>
+          <div style="font-size:20px;color:#ffd700;margin-top:6px">💰 ${formatNum(payload.amount)}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">from ${result.trainerName||'Trainer'}</div>
         </div>
       </div>`;
   } else if (payload.type === 'gems') {
-    const amount = Math.max(1, Math.floor(payload.amount) || 1);
     previewHtml = `
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(171,71,188,0.06);border:1px solid rgba(171,71,188,0.25);border-radius:8px;padding:12px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;background:rgba(79,195,247,0.08);border:1px solid rgba(79,195,247,0.3);border-radius:8px;padding:12px">
         <span style="font-size:52px">💎</span>
         <div>
-          <div style="font-family:'Press Start 2P';font-size:8px;color:#ab47bc">GEMS</div>
-          <div style="font-size:22px;color:#ce93d8;margin-top:4px">${amount}</div>
-          <div style="font-size:13px;color:var(--text2);margin-top:2px">Premium currency</div>
+          <div style="font-family:'Press Start 2P';font-size:8px;color:#4fc3f7">GEMS TRADE</div>
+          <div style="font-size:20px;color:#4fc3f7;margin-top:6px">💎 ${payload.amount}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">from ${result.trainerName||'Trainer'}</div>
         </div>
       </div>`;
   }
@@ -8242,25 +8637,27 @@ async function acceptOnlineTrade(code) {
     } else if (payload.type === 'gold') {
       const amount = Math.max(1, Math.floor(payload.amount) || 1);
       gameState.gold = (gameState.gold || 0) + amount;
-      renderAll(); saveGame();
+      updateResourceUI(); renderAll(); saveGame();
       document.getElementById('trade-content').innerHTML = `
         <div style="text-align:center;padding:16px">
           <div style="font-size:64px;margin-bottom:8px">💰</div>
-          <div style="font-family:'Press Start 2P';font-size:9px;color:var(--gold);margin-top:6px">+${amount.toLocaleString()} Gold received!</div>
+          <div style="font-family:'Press Start 2P';font-size:9px;color:#ffd700;margin-top:6px">💰 ${formatNum(amount)} Gold received!</div>
+          <div style="font-size:14px;color:var(--text2);margin-top:6px">Added to your wallet!</div>
           <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
         </div>`;
-      toast(`✅ Trade claimed! +${amount.toLocaleString()} Gold!`, 5000);
+      toast(`✅ 💰 ${formatNum(amount)} Gold received!`, 5000);
     } else if (payload.type === 'gems') {
       const amount = Math.max(1, Math.floor(payload.amount) || 1);
       gameState.gems = (gameState.gems || 0) + amount;
-      renderAll(); saveGame();
+      updateResourceUI(); renderAll(); saveGame();
       document.getElementById('trade-content').innerHTML = `
         <div style="text-align:center;padding:16px">
           <div style="font-size:64px;margin-bottom:8px">💎</div>
-          <div style="font-family:'Press Start 2P';font-size:9px;color:#ab47bc;margin-top:6px">+${amount} Gems received!</div>
+          <div style="font-family:'Press Start 2P';font-size:9px;color:#4fc3f7;margin-top:6px">💎 ${amount} Gems received!</div>
+          <div style="font-size:14px;color:var(--text2);margin-top:6px">Added to your gems!</div>
           <button class="btn" style="width:100%;margin-top:14px" onclick="renderOnlineTradeMenu()">← Back</button>
         </div>`;
-      toast(`✅ Trade claimed! +${amount} Gems!`, 5000);
+      toast(`✅ 💎 ${amount} Gems received!`, 5000);
     } else {
       toast('✅ Trade claimed!', 4000);
       renderOnlineTradeMenu();
@@ -8283,79 +8680,75 @@ async function acceptOnlineTrade(code) {
 
 // ── POST GOLD TRADE ───────────────────────────────────────────
 
+function adjGoldTrade(delta) {
+  const maxG = gameState.gold || 0;
+  window._onlineGoldAmt = Math.min(maxG, Math.max(1000, (window._onlineGoldAmt || 1000) + delta));
+  const el = document.getElementById('gold-trade-display');
+  if (el) el.textContent = formatNum(window._onlineGoldAmt);
+}
 function showOnlinePostGold() {
   clearOnlineCountdown();
-  const owned = gameState.gold || 0;
-  if (owned <= 0) {
-    document.getElementById('trade-content').innerHTML = `
-      <div style="text-align:center;padding:20px;color:var(--text2)">You have no gold to trade!</div>
-      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  if (!window._onlineGoldAmt || window._onlineGoldAmt < 1000) window._onlineGoldAmt = 10000;
+  const max = gameState.gold || 0;
+  if (max <= 0) {
+    document.getElementById('trade-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2)">No Gold to trade!</div><button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">Back</button>';
     return;
   }
-  window._onlineGoldAmt = Math.min(1000, owned);
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <span style="font-size:52px">💰</span>
-      <div>
-        <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold)">GOLD</div>
-        <div style="font-size:14px;color:var(--text2)">You own: ${owned.toLocaleString()}</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;justify-content:center;flex-wrap:wrap">
-      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(-1000)">−1k</button>
-      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(-100)">−100</button>
-      <span id="online-gold-amt" style="font-family:'Press Start 2P';font-size:13px;color:#ffd700;min-width:80px;text-align:center">${window._onlineGoldAmt.toLocaleString()}</span>
-      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(100)">+100</button>
-      <button class="btn" style="font-size:18px;padding:4px 12px" onclick="adjustGoldAmt(1000)">+1k</button>
-      <button class="btn" style="font-size:14px" onclick="window._onlineGoldAmt=${owned};document.getElementById('online-gold-amt').textContent='${owned.toLocaleString()}'">Max</button>
-    </div>
-    <div style="background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
-      Gold is <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn" style="flex:1;border-color:#ffd700;color:#ffd700;font-size:16px" onclick="confirmOnlineGoldPost()">✅ Post Gold</button>
-      <button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">← Back</button>
-    </div>`;
-}
-
-function adjustGoldAmt(delta) {
-  const owned = gameState.gold || 0;
-  window._onlineGoldAmt = Math.max(1, Math.min(owned, (window._onlineGoldAmt || 1) + delta));
-  document.getElementById('online-gold-amt').textContent = window._onlineGoldAmt.toLocaleString();
+  const amt = window._onlineGoldAmt;
+  document.getElementById('trade-content').innerHTML = [
+    '<div style="font-family:var(--font);font-size:8px;color:#ffd700;margin-bottom:12px;text-align:center;letter-spacing:1px">TRADE GOLD</div>',
+    '<div style="display:flex;align-items:center;justify-content:center;gap:16px;background:rgba(255,215,0,0.07);border:1px solid rgba(255,215,0,0.3);border-radius:10px;padding:14px;margin-bottom:14px">',
+    '<div style="font-size:40px">&#128176;</div>',
+    '<div style="text-align:center">',
+    '<div id="gold-trade-display" style="font-family:var(--font);font-size:16px;color:#ffd700">' + formatNum(amt) + '</div>',
+    '<div style="font-size:12px;color:var(--text2);margin-top:4px">You have: ' + formatNum(max) + '</div>',
+    '</div></div>',
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px">',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="adjGoldTrade(-10000)">-10k</button>',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="adjGoldTrade(-1000)">-1k</button>',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="adjGoldTrade(1000)">+1k</button>',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="adjGoldTrade(10000)">+10k</button>',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700" onclick="adjGoldTrade(100000)">+100k</button>',
+    '<button class="btn" style="border-color:#ffd700;color:#ffd700;background:rgba(255,215,0,0.1)" onclick="adjGoldTrade(999999999)">MAX</button>',
+    '</div>',
+    '<div style="background:rgba(239,83,80,0.08);border:1px solid rgba(239,83,80,0.3);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center;font-size:13px;color:var(--text2)">Gold is <b style="color:#ef5350">removed immediately</b>. Code valid 5 min.</div>',
+    '<div style="display:flex;gap:8px">',
+    '<button class="btn" style="flex:1;border-color:#ffd700;color:#ffd700" onclick="confirmOnlineGoldPost()">Post Gold</button>',
+    '<button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">Back</button>',
+    '</div>'
+  ].join('');
 }
 
 async function confirmOnlineGoldPost() {
-  const amount = window._onlineGoldAmt || 1;
-  if (gameState.gold < amount) { toast('Not enough gold!', 2000); return; }
-
+  const amount = Math.floor(window._onlineGoldAmt || 0);
+  if(amount <= 0) { toast('Set an amount first!', 2000); return; }
+  if(gameState.gold < amount) { toast('Not enough Gold!', 2000); return; }
   gameState.gold -= amount;
-  renderAll(); saveGame();
+  updateResourceUI(); renderAll(); saveGame();
   window._onlineGoldAmt = null;
-
   document.getElementById('trade-content').innerHTML = `
     <div style="text-align:center;padding:24px">
       <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
       <div style="font-size:16px;color:var(--text2)">Posting gold trade…</div>
     </div>`;
-
   try {
     const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'gold', amount, trainerName: gameState.trainerName || 'Trainer' }),
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const result = await resp.json();
-    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💰', 'Gold', amount, '#ffd700');
-  } catch (e) {
+    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💰', `${formatNum(amount)} Gold`, '#ffd700');
+  } catch(e) {
     gameState.gold += amount;
-    renderAll(); saveGame();
+    updateResourceUI(); renderAll(); saveGame();
     toast('❌ Could not reach trade server. Gold returned!', 4000);
     document.getElementById('trade-content').innerHTML = `
       <div style="text-align:center;padding:20px;color:#ef5350">
         <div style="font-size:32px;margin-bottom:8px">❌</div>
         Could not reach the trade server.<br><br>
-        <span style="font-size:13px;color:var(--text2)">${amount.toLocaleString()} Gold returned.</span>
+        <span style="font-size:13px;color:var(--text2)">💰${formatNum(amount)} Gold returned.</span>
       </div>
       <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
   }
@@ -8363,95 +8756,89 @@ async function confirmOnlineGoldPost() {
 
 // ── POST GEMS TRADE ───────────────────────────────────────────
 
+function adjGemsTrade(delta) {
+  const maxG = gameState.gems || 0;
+  window._onlineGemsAmt = Math.min(maxG, Math.max(1, (window._onlineGemsAmt || 10) + delta));
+  const el = document.getElementById('gems-trade-display');
+  if (el) el.textContent = window._onlineGemsAmt;
+}
 function showOnlinePostGems() {
   clearOnlineCountdown();
-  const owned = gameState.gems || 0;
-  if (owned <= 0) {
-    document.getElementById('trade-content').innerHTML = `
-      <div style="text-align:center;padding:20px;color:var(--text2)">You have no gems to trade!</div>
-      <button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">← Back</button>`;
+  if (!window._onlineGemsAmt) window._onlineGemsAmt = 10;
+  const max = gameState.gems || 0;
+  if (max <= 0) {
+    document.getElementById('trade-content').innerHTML = '<div style="text-align:center;padding:20px;color:var(--text2)">No Gems to trade!</div><button class="btn" style="width:100%;margin-top:8px" onclick="renderOnlineTradeMenu()">Back</button>';
     return;
   }
-  window._onlineGemsAmt = 1;
-  document.getElementById('trade-content').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-      <span style="font-size:52px">💎</span>
-      <div>
-        <div style="font-family:'Press Start 2P';font-size:8px;color:#ab47bc">GEMS</div>
-        <div style="font-size:14px;color:var(--text2)">You own: ${owned}</div>
-      </div>
-    </div>
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;justify-content:center;flex-wrap:wrap">
-      <button class="btn" style="font-size:18px;padding:4px 10px"
-        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-100);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−100</button>
-      <button class="btn" style="font-size:18px;padding:4px 10px"
-        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-10);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−10</button>
-      <button class="btn" style="font-size:20px;padding:4px 12px"
-        onclick="window._onlineGemsAmt=Math.max(1,window._onlineGemsAmt-1);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">−</button>
-      <span id="online-gems-amt" style="font-family:'Press Start 2P';font-size:14px;color:#ce93d8;min-width:48px;text-align:center">1</span>
-      <button class="btn" style="font-size:20px;padding:4px 12px"
-        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+1);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+</button>
-      <button class="btn" style="font-size:18px;padding:4px 10px"
-        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+10);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+10</button>
-      <button class="btn" style="font-size:18px;padding:4px 10px"
-        onclick="window._onlineGemsAmt=Math.min(${owned},window._onlineGemsAmt+100);document.getElementById('online-gems-amt').textContent=window._onlineGemsAmt">+100</button>
-      <button class="btn" style="font-size:14px"
-        onclick="window._onlineGemsAmt=${owned};document.getElementById('online-gems-amt').textContent='${owned}'">Max</button>
-    </div>
-    <div style="background:rgba(171,71,188,0.08);border:1px solid rgba(171,71,188,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
-      Gems are <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
-    </div>
-    <div style="display:flex;gap:8px">
-      <button class="btn" style="flex:1;border-color:#ab47bc;color:#ce93d8;font-size:16px" onclick="confirmOnlineGemsPost()">✅ Post Gems</button>
-      <button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">← Back</button>
-    </div>`;
+  const amt = window._onlineGemsAmt;
+  document.getElementById('trade-content').innerHTML = [
+    '<div style="font-family:var(--font);font-size:8px;color:#4fc3f7;margin-bottom:12px;text-align:center;letter-spacing:1px">TRADE GEMS</div>',
+    '<div style="display:flex;align-items:center;justify-content:center;gap:16px;background:rgba(79,195,247,0.07);border:1px solid rgba(79,195,247,0.3);border-radius:10px;padding:14px;margin-bottom:14px">',
+    '<div style="font-size:40px">&#128142;</div>',
+    '<div style="text-align:center">',
+    '<div id="gems-trade-display" style="font-family:var(--font);font-size:16px;color:#4fc3f7">' + amt + '</div>',
+    '<div style="font-size:12px;color:var(--text2);margin-top:4px">You have: ' + max + '</div>',
+    '</div></div>',
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin-bottom:14px">',
+    '<button class="btn" style="border-color:#4fc3f7;color:#4fc3f7" onclick="adjGemsTrade(-100)">-100</button>',
+    '<button class="btn" style="border-color:#4fc3f7;color:#4fc3f7" onclick="adjGemsTrade(-10)">-10</button>',
+    '<button class="btn" style="border-color:#4fc3f7;color:#4fc3f7" onclick="adjGemsTrade(10)">+10</button>',
+    '<button class="btn" style="border-color:#4fc3f7;color:#4fc3f7" onclick="adjGemsTrade(100)">+100</button>',
+    '<button class="btn" style="border-color:#4fc3f7;color:#4fc3f7;background:rgba(79,195,247,0.1)" onclick="adjGemsTrade(999999)">MAX</button>',
+    '</div>',
+    '<div style="background:rgba(239,83,80,0.08);border:1px solid rgba(239,83,80,0.3);border-radius:8px;padding:10px;margin-bottom:12px;text-align:center;font-size:13px;color:var(--text2)">Gems are <b style="color:#ef5350">removed immediately</b>. Code valid 5 min.</div>',
+    '<div style="display:flex;gap:8px">',
+    '<button class="btn" style="flex:1;border-color:#4fc3f7;color:#4fc3f7" onclick="confirmOnlineGemsPost()">Post Gems</button>',
+    '<button class="btn" style="flex:1" onclick="renderOnlineTradeMenu()">Back</button>',
+    '</div>'
+  ].join('');
 }
 
 async function confirmOnlineGemsPost() {
-  const amount = window._onlineGemsAmt || 1;
-  if (gameState.gems < amount) { toast('Not enough gems!', 2000); return; }
-
+  const amount = Math.floor(window._onlineGemsAmt || 0);
+  if(amount <= 0) { toast('Set an amount first!', 2000); return; }
+  if(gameState.gems < amount) { toast('Not enough Gems!', 2000); return; }
   gameState.gems -= amount;
-  renderAll(); saveGame();
+  updateResourceUI(); renderAll(); saveGame();
   window._onlineGemsAmt = null;
-
   document.getElementById('trade-content').innerHTML = `
     <div style="text-align:center;padding:24px">
       <div style="font-size:36px;margin-bottom:8px;animation:spin 1s linear infinite">⏳</div>
       <div style="font-size:16px;color:var(--text2)">Posting gems trade…</div>
     </div>`;
-
   try {
     const resp = await fetch(`${TRADE_WORKER_URL}/offer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'gems', amount, trainerName: gameState.trainerName || 'Trainer' }),
     });
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const result = await resp.json();
-    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💎', 'Gems', amount, '#ab47bc');
-  } catch (e) {
+    showOnlineCurrencyCodeDisplay(result.code, result.expiresAt, '💎', `${amount} Gems`, '#4fc3f7');
+  } catch(e) {
     gameState.gems += amount;
-    renderAll(); saveGame();
+    updateResourceUI(); renderAll(); saveGame();
     toast('❌ Could not reach trade server. Gems returned!', 4000);
     document.getElementById('trade-content').innerHTML = `
       <div style="text-align:center;padding:20px;color:#ef5350">
         <div style="font-size:32px;margin-bottom:8px">❌</div>
         Could not reach the trade server.<br><br>
-        <span style="font-size:13px;color:var(--text2)">${amount} Gems returned.</span>
+        <span style="font-size:13px;color:var(--text2)">💎${amount} Gems returned.</span>
       </div>
       <button class="btn" style="width:100%;margin-top:12px" onclick="renderOnlineTradeMenu()">← Back</button>`;
   }
 }
 
-function showOnlineCurrencyCodeDisplay(code, expiresAt, emoji, label, amount, color) {
+// ── Shared currency code display ──────────────────────────────
+
+function showOnlineCurrencyCodeDisplay(code, expiresAt, icon, label, color) {
   clearOnlineCountdown();
   document.getElementById('trade-content').innerHTML = `
     <div style="text-align:center;margin-bottom:14px">
-      <div style="font-size:64px">${emoji}</div>
-      <div style="font-family:'Press Start 2P';font-size:8px;color:var(--gold);margin-top:6px">${amount.toLocaleString()} ${label} posted!</div>
+      <div style="font-size:64px">${icon}</div>
+      <div style="font-family:'Press Start 2P';font-size:8px;color:${color};margin-top:6px">${label} posted!</div>
     </div>
-    <div style="background:rgba(255,150,0,0.1);border:2px solid ${color};border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">
+    <div style="background:rgba(79,195,247,0.08);border:2px solid ${color};border-radius:12px;padding:16px;text-align:center;margin-bottom:12px">
       <div style="font-size:13px;color:var(--text2);margin-bottom:6px">Share this code with your trade partner:</div>
       <div style="font-family:'Press Start 2P';font-size:22px;color:${color};letter-spacing:6px;margin-bottom:10px">${code}</div>
       <button class="btn" style="border-color:${color};color:${color};font-size:15px" onclick="copyOnlineCode('${code}')">📋 Copy Code</button>
@@ -8460,15 +8847,15 @@ function showOnlineCurrencyCodeDisplay(code, expiresAt, emoji, label, amount, co
       <span style="font-size:13px;color:var(--text2)">Expires in: </span>
       <span id="online-trade-timer" style="font-family:'Press Start 2P';font-size:12px;color:#ffd700">5:00</span>
     </div>
-    <div style="font-size:12px;color:#555;text-align:center">Once claimed the code becomes invalid automatically.</div>`;
-
+    <div style="font-size:12px;color:#555;text-align:center">Once claimed the code becomes invalid automatically.</div>
+  `;
   const tick = () => {
     const remaining = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
     const el = document.getElementById('online-trade-timer');
-    if (!el) { clearOnlineCountdown(); return; }
+    if(!el) { clearOnlineCountdown(); return; }
     el.textContent = fmtSeconds(remaining);
-    if (remaining <= 60) el.style.color = '#ef5350';
-    if (remaining === 0) { clearOnlineCountdown(); toast('⏰ Trade code expired!', 4000); el.textContent = 'EXPIRED'; }
+    if(remaining <= 60) el.style.color = '#ef5350';
+    if(remaining === 0) { clearOnlineCountdown(); toast('⏰ Trade code expired!', 4000); el.textContent = 'EXPIRED'; }
   };
   tick();
   _onlineTradeCountdownInterval = setInterval(tick, 1000);
@@ -8516,6 +8903,7 @@ function showOnlineItemAmountPicker(itemId) {
   if (maxOwned <= 0) { toast('No more of that item!'); return; }
   window._onlineItemId = itemId;
   window._onlineItemAmt = 1;
+  window._onlineItemMax = maxOwned;
 
   document.getElementById('trade-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
@@ -8530,9 +8918,9 @@ function showOnlineItemAmountPicker(itemId) {
         onclick="window._onlineItemAmt=Math.max(1,window._onlineItemAmt-1);document.getElementById('online-item-amt').textContent='×'+window._onlineItemAmt">−</button>
       <span id="online-item-amt" style="font-family:'Press Start 2P';font-size:14px;color:#ff9e40;min-width:48px;text-align:center">×1</span>
       <button class="btn" style="font-size:20px;padding:4px 14px"
-        onclick="window._onlineItemAmt=Math.min(${maxOwned},window._onlineItemAmt+1);document.getElementById('online-item-amt').textContent='×'+window._onlineItemAmt">+</button>
+        onclick="window._onlineItemAmt=Math.min(window._onlineItemMax,window._onlineItemAmt+1);document.getElementById('online-item-amt').textContent='×'+window._onlineItemAmt">+</button>
       <button class="btn" style="font-size:14px"
-        onclick="window._onlineItemAmt=${maxOwned};document.getElementById('online-item-amt').textContent='×${maxOwned}'">Max</button>
+        onclick="window._onlineItemAmt=window._onlineItemMax;document.getElementById('online-item-amt').textContent='×'+window._onlineItemMax">Max</button>
     </div>
     <div style="background:rgba(255,150,0,0.08);border:1px solid rgba(255,150,0,0.3);border-radius:8px;padding:10px;margin-bottom:10px;text-align:center;font-size:13px;color:var(--text2)">
       Items are <b style="color:#ef5350">removed immediately</b>.<br>A 6-char code valid for <b style="color:#ffd700">5 minutes</b> will be shown.
